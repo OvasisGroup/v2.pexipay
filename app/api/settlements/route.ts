@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authenticateApiKey } from '@/lib/auth/api-key';
+import { requireAuth } from '@/lib/middleware/auth';
 
 /**
  * GET /api/settlements
@@ -9,21 +9,41 @@ import { authenticateApiKey } from '@/lib/auth/api-key';
 export async function GET(request: NextRequest) {
   try {
     // Authenticate
-    const authResult = await authenticateApiKey(request);
-    if (!authResult.authenticated || !authResult.context) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAuth(request);
+    if (!authResult.authorized) {
+      return authResult.response;
     }
 
-    const { merchantId, superMerchantId } = authResult.context;
+    // Get merchant ID from auth context
+    let merchantId: string | undefined;
+    let superMerchantId: string | undefined;
+    
+    if (authResult.context.user) {
+      merchantId = authResult.context.user.merchantId || undefined;
+      superMerchantId = authResult.context.user.superMerchantId || undefined;
+    } else if (authResult.context.apiKeyId) {
+      const apiKey = await prisma.apiKey.findUnique({
+        where: { id: authResult.context.apiKeyId },
+        select: { merchantId: true, Merchant: { select: { superMerchantId: true } } },
+      });
+      if (apiKey) {
+        merchantId = apiKey.merchantId || undefined;
+        superMerchantId = apiKey.Merchant?.superMerchantId || undefined;
+      }
+    }
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
     const offset = parseInt(searchParams.get('offset') || '0');
-    const status = searchParams.get('status');
+    const statusParam = searchParams.get('status');
 
     // Build where clause
-    const where: any = {};
+    const where: {
+      superMerchantId?: string;
+      merchantId?: string;
+      status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    } = {};
     
     // Filter by merchant or super merchant
     if (superMerchantId) {
@@ -33,8 +53,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter by status if provided
-    if (status) {
-      where.status = status;
+    if (statusParam && ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'].includes(statusParam)) {
+      where.status = statusParam as 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
     }
 
     // Fetch settlements

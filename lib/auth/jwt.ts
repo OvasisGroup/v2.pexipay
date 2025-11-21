@@ -1,8 +1,11 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { UserRole } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export interface JwtPayload {
   userId: string;
@@ -13,9 +16,7 @@ export interface JwtPayload {
 }
 
 export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyToken(token: string): JwtPayload {

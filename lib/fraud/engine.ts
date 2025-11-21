@@ -178,11 +178,13 @@ export class FraudEngine {
     if (result.shouldReview || result.shouldBlock) {
       await prisma.fraudCase.create({
         data: {
+          id: `fc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           transactionId,
           merchantId,
           fraudScore: result.score,
           triggeredRules: JSON.stringify(result.triggeredRules),
           status: result.shouldBlock ? 'OPEN' : 'UNDER_REVIEW',
+          updatedAt: new Date(),
         },
       });
     }

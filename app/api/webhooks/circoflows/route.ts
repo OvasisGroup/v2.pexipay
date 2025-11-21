@@ -27,9 +27,9 @@ export async function POST(request: NextRequest) {
         ],
       },
       include: {
-        merchant: {
+        Merchant: {
           include: {
-            superMerchant: true,
+            SuperMerchant: true,
           },
         },
       },
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         await ledgerService.recordTransaction(
           transaction.id,
           transaction.merchantId,
-          transaction.merchant.superMerchantId,
+          transaction.Merchant.superMerchantId,
           Number(transaction.amount),
           Number(transaction.merchantFee),
           Number(transaction.superMerchantFee),
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         await ledgerServiceRefund.recordRefund(
           transaction.id,
           transaction.merchantId,
-          transaction.merchant.superMerchantId,
+          transaction.Merchant.superMerchantId,
           Number(transaction.amount),
           transaction.currency
         );
@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
     // Create webhook event record
     await prisma.webhookEvent.create({
       data: {
+        id: `whev_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         eventType: 'TRANSACTION_UPDATED',
         status: 'SENT',
         targetUrl: 'internal',
@@ -107,6 +108,7 @@ export async function POST(request: NextRequest) {
         signature,
         transactionId: transaction.id,
         sentAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 

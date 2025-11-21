@@ -26,11 +26,13 @@ async function main() {
     where: { email: 'admin@pexipay.com' },
     update: {},
     create: {
+      id: `u_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       email: 'admin@pexipay.com',
       passwordHash: hashedPassword,
       name: 'Super Admin',
       role: 'ADMIN',
       status: 'ACTIVE',
+      updatedAt: new Date(),
     },
   });
 
@@ -44,6 +46,7 @@ async function main() {
     where: { email: 'supermerchant@test.com' },
     update: {},
     create: {
+      id: `sm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: 'Super Merchant Corp',
       email: 'supermerchant@test.com',
       businessName: 'Test Super Merchant',
@@ -52,18 +55,21 @@ async function main() {
       taxId: 'TAX-SM-001',
       commissionRate: 2.5,
       status: 'ACTIVE',
-      users: {
+      updatedAt: new Date(),
+      User: {
         create: {
+          id: `u_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           email: 'supermerchant@test.com',
           passwordHash: await hashPassword('SuperMerchant123!'),
           name: 'Super Merchant User',
           role: 'SUPER_MERCHANT',
           status: 'ACTIVE',
+          updatedAt: new Date(),
         },
       },
     },
     include: {
-      users: true,
+      User: true,
     },
   });
 
@@ -77,6 +83,7 @@ async function main() {
     where: { email: 'merchant@test.com' },
     update: {},
     create: {
+      id: `m_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: 'Merchant LLC',
       email: 'merchant@test.com',
       businessName: 'Test Merchant',
@@ -86,18 +93,21 @@ async function main() {
       superMerchantId: superMerchant.id,
       transactionFee: 1.5,
       status: 'ACTIVE',
-      users: {
+      updatedAt: new Date(),
+      User: {
         create: {
+          id: `u_${Date.now() + 1}_${Math.random().toString(36).substr(2, 9)}`,
           email: 'merchant@test.com',
           passwordHash: await hashPassword('Merchant123!'),
           name: 'Merchant User',
           role: 'MERCHANT',
           status: 'ACTIVE',
+          updatedAt: new Date(),
         },
       },
     },
     include: {
-      users: true,
+      User: true,
     },
   });
 

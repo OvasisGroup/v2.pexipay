@@ -17,7 +17,7 @@ export class SettlementService {
     // Get all active merchants
     const merchants = await prisma.merchant.findMany({
       where: { status: 'ACTIVE' },
-      include: { superMerchant: true },
+      include: { SuperMerchant: true },
     });
 
     for (const merchant of merchants) {
@@ -68,6 +68,7 @@ export class SettlementService {
     // Create settlement record
     const settlement = await prisma.settlement.create({
       data: {
+        id: `set_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         merchantId,
         amount: totalAmount,
         feeTotal: totalFees,
@@ -76,6 +77,7 @@ export class SettlementService {
         periodEnd,
         transactionCount: transactions.length,
         status: 'PENDING',
+        updatedAt: new Date(),
       },
     });
 
@@ -83,6 +85,7 @@ export class SettlementService {
     const balance = await ledgerService.getAccountBalance(merchantId, 'merchant');
     await prisma.ledgerEntry.create({
       data: {
+        id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         merchantId,
         settlementId: settlement.id,
         type: 'SETTLEMENT_DEBIT',
@@ -138,6 +141,7 @@ export class SettlementService {
     // Create settlement record
     const settlement = await prisma.settlement.create({
       data: {
+        id: `set_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         superMerchantId,
         amount: totalCommission,
         feeTotal: 0,
@@ -146,6 +150,7 @@ export class SettlementService {
         periodEnd,
         transactionCount: commissionEntries.length,
         status: 'PENDING',
+        updatedAt: new Date(),
       },
     });
 
@@ -153,6 +158,7 @@ export class SettlementService {
     const balance = await ledgerService.getAccountBalance(superMerchantId, 'super-merchant');
     await prisma.ledgerEntry.create({
       data: {
+        id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         superMerchantId,
         settlementId: settlement.id,
         type: 'SETTLEMENT_DEBIT',

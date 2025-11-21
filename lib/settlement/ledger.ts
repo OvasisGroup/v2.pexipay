@@ -24,6 +24,7 @@ export class LedgerService {
       const merchantNetAmount = amount - merchantFee - superMerchantFee;
       await tx.ledgerEntry.create({
         data: {
+          id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           merchantId,
           type: 'TRANSACTION_CREDIT',
           amount: merchantNetAmount,
@@ -38,6 +39,7 @@ export class LedgerService {
       if (merchantFee > 0) {
         await tx.ledgerEntry.create({
           data: {
+            id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             merchantId,
             type: 'FEE_DEBIT',
             amount: merchantFee,
@@ -53,6 +55,7 @@ export class LedgerService {
       if (superMerchantFee > 0) {
         await tx.ledgerEntry.create({
           data: {
+            id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             superMerchantId,
             type: 'COMMISSION_CREDIT',
             amount: superMerchantFee,
@@ -82,6 +85,7 @@ export class LedgerService {
       // Merchant debit (refund amount)
       await tx.ledgerEntry.create({
         data: {
+          id: `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           merchantId,
           type: 'REFUND_DEBIT',
           amount,

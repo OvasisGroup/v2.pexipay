@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: error.issues },
         { status: 400 }
       );
     }
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Map database status to user-friendly status
-    let displayStatus = transaction.status;
+    let displayStatus: string = transaction.status;
     if (transaction.status === 'CAPTURED') {
       displayStatus = 'COMPLETED';
     } else if (transaction.status === 'PROCESSING') {

@@ -73,13 +73,25 @@ export async function GET(
           transaction.circoFlowsId
         );
 
+        // Map CircoFlows status to Prisma status
+        let dbStatus: 'CAPTURED' | 'FAILED' | 'PROCESSING' | 'PENDING' = 'PROCESSING';
+        if (paymentStatus.status === 'succeeded') {
+          dbStatus = 'CAPTURED';
+        } else if (paymentStatus.status === 'failed') {
+          dbStatus = 'FAILED';
+        } else if (paymentStatus.status === 'processing' || paymentStatus.status === 'requires_action') {
+          dbStatus = 'PROCESSING';
+        } else {
+          dbStatus = 'PENDING';
+        }
+
         // Update local status if different
-        if (paymentStatus.status !== transaction.status) {
+        if (dbStatus !== transaction.status) {
           await prisma.transaction.update({
             where: { id: transaction.id },
-            data: { status: paymentStatus.status },
+            data: { status: dbStatus },
           });
-          transaction.status = paymentStatus.status;
+          transaction.status = dbStatus;
         }
       } catch (error) {
         console.error('Failed to fetch payment status from CircoFlows:', error);

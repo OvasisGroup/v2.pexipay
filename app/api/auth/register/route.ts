@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       // Create super-merchant
       const superMerchant = await prisma.superMerchant.create({
         data: {
+          id: `sm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           name: data.name,
           email: data.email,
           businessName: data.businessName,
@@ -47,17 +48,20 @@ export async function POST(request: NextRequest) {
           country: data.country,
           taxId: data.taxId,
           status: 'PENDING',
+          updatedAt: new Date(),
         },
       });
 
       // Create user
       const user = await prisma.user.create({
         data: {
+          id: `u_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           email: data.email,
           passwordHash,
           name: data.name,
           role: 'SUPER_MERCHANT',
           superMerchantId: superMerchant.id,
+          updatedAt: new Date(),
         },
       });
 
@@ -97,6 +101,7 @@ export async function POST(request: NextRequest) {
       // Create merchant
       const merchant = await prisma.merchant.create({
         data: {
+          id: `m_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           name: data.name,
           email: data.email,
           businessName: data.businessName,
@@ -105,17 +110,20 @@ export async function POST(request: NextRequest) {
           taxId: data.taxId,
           superMerchantId: data.superMerchantId,
           status: 'PENDING',
+          updatedAt: new Date(),
         },
       });
 
       // Create user
       const user = await prisma.user.create({
         data: {
+          id: `u_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           email: data.email,
           passwordHash,
           name: data.name,
           role: 'MERCHANT',
           merchantId: merchant.id,
+          updatedAt: new Date(),
         },
       });
 
