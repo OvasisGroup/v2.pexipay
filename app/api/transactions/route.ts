@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         select: { id: true },
       });
 
-      const merchantIds = merchants.map(m => m.id);
+      const merchantIds = merchants.map((m: { id: string }) => m.id);
       whereClause = { merchantId: { in: merchantIds } };
     }
     // For ADMIN, no where clause (fetch all transactions)
