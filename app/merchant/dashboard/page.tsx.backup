@@ -1,0 +1,159 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+export default function MerchantDashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+
+    if (!token || !userData) {
+      router.push('/auth/login');
+      return;
+    }
+
+    const parsedUser = JSON.parse(userData);
+    if (parsedUser.role !== 'MERCHANT') {
+      router.push('/auth/login');
+      return;
+    }
+
+    setUser(parsedUser);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/auth/login');
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Merchant Dashboard</h1>
+              <p className="mt-1 text-sm text-gray-600">Welcome back, {user.name}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">Total Revenue</div>
+            <div className="text-3xl font-bold text-gray-900">$0.00</div>
+            <div className="text-sm text-green-600 mt-2">+0% from last month</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">Transactions</div>
+            <div className="text-3xl font-bold text-gray-900">0</div>
+            <div className="text-sm text-gray-600 mt-2">No transactions yet</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">Success Rate</div>
+            <div className="text-3xl font-bold text-gray-900">0%</div>
+            <div className="text-sm text-gray-600 mt-2">N/A</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">Pending Settlement</div>
+            <div className="text-3xl font-bold text-gray-900">$0.00</div>
+            <div className="text-sm text-gray-600 mt-2">Next payout in N/A</div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              href="/merchant/api-keys"
+              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
+            >
+              <div className="text-3xl mr-4">🔑</div>
+              <div>
+                <div className="font-semibold text-gray-900">API Keys</div>
+                <div className="text-sm text-gray-600">Manage your API credentials</div>
+              </div>
+            </Link>
+            <Link
+              href="/merchant/transactions"
+              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
+            >
+              <div className="text-3xl mr-4">💳</div>
+              <div>
+                <div className="font-semibold text-gray-900">Transactions</div>
+                <div className="text-sm text-gray-600">View transaction history</div>
+              </div>
+            </Link>
+            <Link
+              href="/merchant/settings"
+              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
+            >
+              <div className="text-3xl mr-4">⚙️</div>
+              <div>
+                <div className="font-semibold text-gray-900">Settings</div>
+                <div className="text-sm text-gray-600">Configure your account</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Getting Started */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-blue-900 mb-3">🚀 Get Started with PexiPay</h2>
+          <div className="space-y-3 text-sm text-blue-800">
+            <div className="flex items-start">
+              <span className="font-semibold mr-2">1.</span>
+              <span>Generate your API keys in the API Keys section</span>
+            </div>
+            <div className="flex items-start">
+              <span className="font-semibold mr-2">2.</span>
+              <span>Complete KYC verification to enable payment processing</span>
+            </div>
+            <div className="flex items-start">
+              <span className="font-semibold mr-2">3.</span>
+              <span>Integrate PexiPay API into your application</span>
+            </div>
+            <div className="flex items-start">
+              <span className="font-semibold mr-2">4.</span>
+              <span>Start accepting payments and track your transactions</span>
+            </div>
+          </div>
+          <Link
+            href="/merchant/documentation"
+            className="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            View Documentation
+          </Link>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}

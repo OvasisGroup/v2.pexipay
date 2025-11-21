@@ -1,0 +1,435 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ApiKey {
+  id              String            @id @default(cuid())
+  name            String
+  keyHash         String            @unique
+  prefix          String
+  superMerchantId String?
+  merchantId      String?
+  status          ApiKeyStatus      @default(ACTIVE)
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  environment     ApiKeyEnvironment @default(SANDBOX)
+  Merchant        Merchant?         @relation(fields: [merchantId], references: [id])
+  SuperMerchant   SuperMerchant?    @relation(fields: [superMerchantId], references: [id])
+
+  @@index([environment])
+  @@index([keyHash])
+  @@index([merchantId])
+  @@index([prefix])
+  @@index([superMerchantId])
+}
+
+model AuditLog {
+  id        String      @id
+  userId    String?
+  apiKeyId  String?
+  action    AuditAction
+  entity    String
+  entityId  String
+  ipAddress String?
+  userAgent String?
+  changes   String?
+  metadata  String?
+  createdAt DateTime    @default(now())
+  User      User?       @relation(fields: [userId], references: [id])
+
+  @@index([action, createdAt])
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([userId, createdAt])
+}
+
+model FraudCase {
+  id             String          @id
+  transactionId  String
+  merchantId     String
+  fraudScore     Decimal
+  triggeredRules String
+  status         FraudCaseStatus @default(OPEN)
+  assignedToId   String?
+  reviewNotes    String?
+  resolution     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  resolvedAt     DateTime?
+  User           User?           @relation(fields: [assignedToId], references: [id])
+  Merchant       Merchant        @relation(fields: [merchantId], references: [id])
+  Transaction    Transaction     @relation(fields: [transactionId], references: [id])
+
+  @@index([assignedToId])
+  @@index([merchantId])
+  @@index([status])
+  @@index([transactionId])
+}
+
+model FraudRule {
+  id          String        @id
+  name        String
+  description String?
+  type        FraudRuleType
+  config      String
+  score       Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+
+  @@index([isActive])
+  @@index([type])
+}
+
+model KYCDocument {
+  id              String         @id
+  superMerchantId String?
+  merchantId      String?
+  documentType    DocumentType
+  status          DocumentStatus @default(UPLOADED)
+  fileName        String
+  fileUrl         String
+  fileSize        Int
+  mimeType        String
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  autoCheckStatus String?
+  uploadedAt      DateTime       @default(now())
+  expiresAt       DateTime?
+  Merchant        Merchant?      @relation(fields: [merchantId], references: [id])
+  User            User?          @relation(fields: [reviewedById], references: [id])
+  SuperMerchant   SuperMerchant? @relation(fields: [superMerchantId], references: [id])
+
+  @@index([documentType])
+  @@index([merchantId])
+  @@index([status])
+  @@index([superMerchantId])
+}
+
+model LedgerEntry {
+  id              String          @id
+  superMerchantId String?
+  merchantId      String?
+  type            LedgerEntryType
+  amount          Decimal
+  currency        String          @default("USD")
+  balance         Decimal
+  transactionId   String?
+  settlementId    String?
+  description     String
+  metadata        String?
+  createdAt       DateTime        @default(now())
+  Merchant        Merchant?       @relation(fields: [merchantId], references: [id])
+  Settlement      Settlement?     @relation(fields: [settlementId], references: [id])
+  SuperMerchant   SuperMerchant?  @relation(fields: [superMerchantId], references: [id])
+  Transaction     Transaction?    @relation(fields: [transactionId], references: [id])
+
+  @@index([merchantId, createdAt])
+  @@index([settlementId])
+  @@index([superMerchantId, createdAt])
+  @@index([transactionId])
+}
+
+model Merchant {
+  id              String         @id
+  name            String
+  email           String         @unique
+  businessName    String
+  businessType    String
+  country         String
+  taxId           String
+  status          MerchantStatus @default(PENDING)
+  superMerchantId String
+  transactionFee  Decimal        @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  ApiKey          ApiKey[]
+  FraudCase       FraudCase[]
+  KYCDocument     KYCDocument[]
+  LedgerEntry     LedgerEntry[]
+  SuperMerchant   SuperMerchant  @relation(fields: [superMerchantId], references: [id])
+  Settlement      Settlement[]
+  Transaction     Transaction[]
+  User            User[]
+
+  @@index([email])
+  @@index([status])
+  @@index([superMerchantId])
+}
+
+model Settlement {
+  id               String           @id
+  superMerchantId  String?
+  merchantId       String?
+  amount           Decimal
+  currency         String           @default("USD")
+  status           SettlementStatus @default(PENDING)
+  periodStart      DateTime
+  periodEnd        DateTime
+  transactionCount Int              @default(0)
+  feeTotal         Decimal          @default(0)
+  netAmount        Decimal
+  processedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  LedgerEntry      LedgerEntry[]
+  Merchant         Merchant?        @relation(fields: [merchantId], references: [id])
+  SuperMerchant    SuperMerchant?   @relation(fields: [superMerchantId], references: [id])
+
+  @@index([merchantId, periodStart])
+  @@index([status])
+  @@index([superMerchantId, periodStart])
+}
+
+model SuperMerchant {
+  id             String         @id
+  name           String
+  email          String         @unique
+  businessName   String
+  businessType   String
+  country        String
+  taxId          String
+  status         MerchantStatus @default(PENDING)
+  commissionRate Decimal        @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  ApiKey         ApiKey[]
+  KYCDocument    KYCDocument[]
+  LedgerEntry    LedgerEntry[]
+  Merchant       Merchant[]
+  Settlement     Settlement[]
+  User           User[]
+
+  @@index([email])
+  @@index([status])
+}
+
+model Transaction {
+  id                 String            @id @default(cuid())
+  externalId         String?           @unique
+  merchantId         String
+  amount             Decimal
+  currency           String            @default("USD")
+  paymentMethod      PaymentMethod
+  status             TransactionStatus @default(PENDING)
+  customerEmail      String?
+  customerName       String?
+  customerIp         String?
+  circoFlowsId       String?           @unique
+  circoFlowsStatus   String?
+  circoFlowsResponse String?
+  requires3DS        Boolean           @default(false)
+  threeDSStatus      String?
+  fraudScore         Decimal?
+  fraudStatus        String?
+  merchantFee        Decimal           @default(0)
+  superMerchantFee   Decimal           @default(0)
+  pspFee             Decimal           @default(0)
+  netAmount          Decimal
+  metadata           String?
+  processedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  FraudCase          FraudCase[]
+  LedgerEntry        LedgerEntry[]
+  Merchant           Merchant          @relation(fields: [merchantId], references: [id])
+  WebhookEvent       WebhookEvent[]
+
+  @@index([circoFlowsId])
+  @@index([createdAt])
+  @@index([customerEmail])
+  @@index([merchantId])
+  @@index([status])
+}
+
+model User {
+  id              String         @id
+  email           String         @unique
+  passwordHash    String
+  name            String
+  role            UserRole
+  status          UserStatus     @default(ACTIVE)
+  superMerchantId String?
+  merchantId      String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  AuditLog        AuditLog[]
+  FraudCase       FraudCase[]
+  KYCDocument     KYCDocument[]
+  Merchant        Merchant?      @relation(fields: [merchantId], references: [id])
+  SuperMerchant   SuperMerchant? @relation(fields: [superMerchantId], references: [id])
+
+  @@index([email])
+  @@index([merchantId])
+  @@index([role])
+  @@index([superMerchantId])
+}
+
+model WebhookEvent {
+  id            String           @id
+  eventType     WebhookEventType
+  status        WebhookStatus    @default(PENDING)
+  targetUrl     String
+  payload       String
+  signature     String?
+  transactionId String?
+  attempts      Int              @default(0)
+  maxAttempts   Int              @default(5)
+  nextRetryAt   DateTime?
+  lastError     String?
+  sentAt        DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime
+  Transaction   Transaction?     @relation(fields: [transactionId], references: [id])
+
+  @@index([nextRetryAt])
+  @@index([status])
+  @@index([transactionId])
+}
+
+enum ApiKeyEnvironment {
+  SANDBOX
+  PRODUCTION
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  API_KEY_GENERATED
+  API_KEY_REVOKED
+  KYC_UPLOADED
+  KYC_REVIEWED
+  TRANSACTION_CREATED
+  FRAUD_CASE_CREATED
+  FRAUD_CASE_RESOLVED
+  SETTLEMENT_PROCESSED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentType {
+  BUSINESS_LICENSE
+  TAX_CERTIFICATE
+  BANK_STATEMENT
+  ID_PROOF
+  ADDRESS_PROOF
+  OTHER
+}
+
+enum FraudCaseStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+enum FraudRuleType {
+  VELOCITY
+  AMOUNT_THRESHOLD
+  COUNTRY_BLOCK
+  IP_BLOCK
+  EMAIL_PATTERN
+  CARD_BIN
+  CUSTOM
+}
+
+enum LedgerEntryType {
+  TRANSACTION_CREDIT
+  TRANSACTION_DEBIT
+  FEE_DEBIT
+  COMMISSION_CREDIT
+  SETTLEMENT_DEBIT
+  REFUND_CREDIT
+  REFUND_DEBIT
+  ADJUSTMENT_CREDIT
+  ADJUSTMENT_DEBIT
+}
+
+enum MerchantStatus {
+  PENDING
+  KYC_REVIEW
+  ACTIVE
+  SUSPENDED
+  REJECTED
+  CLOSED
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  WALLET
+  OTHER
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_MERCHANT
+  MERCHANT
+  KYC_REVIEWER
+  FRAUD_ANALYST
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum WebhookEventType {
+  TRANSACTION_CREATED
+  TRANSACTION_UPDATED
+  TRANSACTION_COMPLETED
+  TRANSACTION_FAILED
+  REFUND_COMPLETED
+  SETTLEMENT_COMPLETED
+  KYC_APPROVED
+  KYC_REJECTED
+}
+
+enum WebhookStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
