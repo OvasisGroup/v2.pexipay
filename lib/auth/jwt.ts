@@ -1,5 +1,6 @@
 import jwt, { Secret } from 'jsonwebtoken';
-import { UserRole } from '@prisma/client';
+
+type UserRole = 'ADMIN' | 'SUPER_MERCHANT' | 'MERCHANT' | 'KYC_REVIEWER' | 'FRAUD_ANALYST';
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
 
