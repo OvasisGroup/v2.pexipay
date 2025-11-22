@@ -133,7 +133,7 @@ export class SettlementService {
     }
 
     const totalCommission = commissionEntries.reduce<number>(
-      (sum, entry) => sum + Number(entry.amount),
+      (sum: number, entry: { amount: number | bigint | string }) => sum + Number(entry.amount),
       0
     );
 
