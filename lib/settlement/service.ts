@@ -132,9 +132,8 @@ export class SettlementService {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const totalCommission = commissionEntries.reduce(
-      (sum: number, entry: any) => sum + Number(entry.amount),
+    const totalCommission = commissionEntries.reduce<number>(
+      (sum, entry) => sum + Number(entry.amount),
       0
     );
 

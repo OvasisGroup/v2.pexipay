@@ -1,6 +1,4 @@
-import { $Enums } from '@prisma/client';
-
-type UserRole = $Enums.UserRole;
+type UserRole = 'ADMIN' | 'SUPER_MERCHANT' | 'MERCHANT' | 'KYC_REVIEWER' | 'FRAUD_ANALYST';
 
 export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   ADMIN: [

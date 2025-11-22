@@ -380,7 +380,7 @@ export default function CreateApiKeyPage() {
                     Rate Limits
                   </h4>
                   <p className="text-sm text-gray-700">
-                    Set appropriate rate limits based on your application's needs.
+                    Set appropriate rate limits based on your application&apos;s needs.
                   </p>
                 </div>
               </div>

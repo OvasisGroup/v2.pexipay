@@ -93,7 +93,7 @@ function Mock3DSContent() {
           </div>
           <div className="text-xs text-gray-500 mt-3">
             <strong>Test Mode:</strong> This is a simulated 3D Secure authentication page. 
-            In production, this would be your bank's authentication page.
+            In production, this would be your bank&apos;s authentication page.
           </div>
         </div>
 
@@ -107,11 +107,11 @@ function Mock3DSContent() {
               </li>
               <li className="flex items-start">
                 <span className="font-semibold mr-2">2.</span>
-                <span>Click "Authenticate" to approve the payment</span>
+                <span>Click &quot;Authenticate&quot; to approve the payment</span>
               </li>
               <li className="flex items-start">
                 <span className="font-semibold mr-2">3.</span>
-                <span>You'll be redirected back to complete your purchase</span>
+                <span>You&apos;ll be redirected back to complete your purchase</span>
               </li>
             </ol>
           </div>

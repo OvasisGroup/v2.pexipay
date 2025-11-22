@@ -1,20 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { prisma } from '../lib/prisma';
 import { hashPassword } from '../lib/auth/password';
-
-// Create a fresh Prisma client for seeding using pg adapter
-// Parse DATABASE_URL manually to avoid parsing issues
-const pool = new Pool({
-  host: 'db.prisma.io',
-  port: 5432,
-  user: '005d853fb88afb8fe1f97c53ce57ef482393edfc575385138caa5630869fcefe',
-  password: 'sk_bxVLyPGwnaUrrXYOCmfGu',
-  database: 'postgres',
-  ssl: { rejectUnauthorized: false },
-});
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter, log: ['error'] });
 
 async function main() {
   console.log('🌱 Starting seed...');

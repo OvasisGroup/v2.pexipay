@@ -53,7 +53,7 @@ function MockPaymentContent() {
             </svg>
             <div className="text-sm text-blue-800">
               <p className="font-semibold mb-1">Test Mode Active</p>
-              <p>This is a simulated payment gateway. No real charges will be made. Click "Complete Payment" to simulate a successful transaction.</p>
+              <p>This is a simulated payment gateway. No real charges will be made. Click &quot;Complete Payment&quot; to simulate a successful transaction.</p>
             </div>
           </div>
         </div>

@@ -45,8 +45,8 @@ export default function AdminDashboard() {
           const transactionsData = await transactionsRes.json();
           const transactions = transactionsData.transactions || [];
           const revenue = transactions
-            .filter((t: any) => t.status === 'COMPLETED')
-            .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+            .filter((t: { status: string }) => t.status === 'COMPLETED')
+            .reduce((sum: number, t: { amount: string | number }) => sum + parseFloat(String(t.amount)), 0);
           
           setStats(prev => ({
             ...prev,

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChartBarIcon,
@@ -68,13 +68,13 @@ export default function Sidebar({ role, onCollapseChange }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return false;
+  });
   const items = menuItems[role] || [];
-
-  // Initialize desktop state
-  useEffect(() => {
-    setIsDesktop(window.innerWidth >= 1024);
-  }, []);
 
   // Notify parent of collapse state changes
   useEffect(() => {
@@ -85,10 +85,12 @@ export default function Sidebar({ role, onCollapseChange }: SidebarProps) {
 
   // Close mobile menu on route change
   useEffect(() => {
-    if (!isDesktop) {
-      setMobileOpen(false);
+    if (!isDesktop && mobileOpen) {
+      startTransition(() => {
+        setMobileOpen(false);
+      });
     }
-  }, [pathname, isDesktop]);
+  }, [pathname, isDesktop, mobileOpen]);
 
   // Handle window resize
   useEffect(() => {

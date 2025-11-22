@@ -67,7 +67,7 @@ export default function ApiKeysDocumentation() {
           </h2>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
             <p className="text-gray-700">
-              API keys are unique authentication tokens that allow your applications to securely communicate with PexiPay's API. 
+              API keys are unique authentication tokens that allow your applications to securely communicate with PexiPay&apos;s API. 
               Each key is tied to your merchant or super merchant account and carries the same permissions as your account.
             </p>
             <div className="bg-green-50 border-l-4 border-green-500 p-4">
