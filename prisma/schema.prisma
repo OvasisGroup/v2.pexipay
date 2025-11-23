@@ -295,6 +295,16 @@ model WebhookEvent {
   @@index([transactionId])
 }
 
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  message   String
+  createdAt DateTime @default(now())
+}
+
 enum ApiKeyEnvironment {
   SANDBOX
   PRODUCTION

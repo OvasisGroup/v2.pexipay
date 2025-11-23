@@ -1,10 +1,59 @@
+"use client";
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
+      <header className="bg-linear-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold text-white">PexiPay</Link>
+
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/docs/api-documentation" className="text-white/90 hover:text-white">Docs</Link>
+            <Link href="/faq" className="text-white/90 hover:text-white">FAQ</Link>
+            <Link href="/dashboard" className="text-white/90 hover:text-white">Dashboard</Link>
+          </div>
+
+          <div className="md:hidden">
+            <button
+              onClick={() => setOpen(!open)}
+              aria-label="Toggle menu"
+              className="p-2 rounded-md bg-white/10 hover:bg-white/20"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={open ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.18 }}
+              className="md:hidden bg-linear-to-b from-blue-600 to-indigo-600"
+            >
+              <div className="px-4 pt-2 pb-4 space-y-2">
+                <Link href="/docs/api-documentation" className="block text-white/90 hover:text-white">Docs</Link>
+                <Link href="/faq" className="block text-white/90 hover:text-white">FAQ</Link>
+                <Link href="/dashboard" className="block text-white/90 hover:text-white">Dashboard</Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      <main>
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             PexiPay PSP Platform
           </h1>
@@ -126,7 +175,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </main>
+
+      {/* Footer moved to RootLayout so it can be shown sitewide except on dashboards */}
     </div>
   );
 }

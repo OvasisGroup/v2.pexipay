@@ -21,6 +21,14 @@ interface ChartDataPoint {
   commission: number;
 }
 
+interface SubMerchant {
+  id: string;
+  businessName: string;
+  email: string;
+  status: string;
+  createdAt: string;
+}
+
 export default function SuperMerchantDashboard() {
   const [userName] = useState(() => {
     if (typeof window === 'undefined') return 'Super Merchant';
@@ -46,6 +54,7 @@ export default function SuperMerchantDashboard() {
   });
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [subMerchants, setSubMerchants] = useState<SubMerchant[]>([]);
 
   useEffect(() => {
     // Get current time
@@ -68,7 +77,7 @@ export default function SuperMerchantDashboard() {
       if (!token) return;
 
       try {
-        // Fetch sub-merchants count
+        // Fetch sub-merchants
         const merchantsRes = await fetch('/api/super-merchant/merchants', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
@@ -76,7 +85,9 @@ export default function SuperMerchantDashboard() {
         let subMerchantCount = 0;
         if (merchantsRes.ok) {
           const merchantsData = await merchantsRes.json();
-          subMerchantCount = merchantsData.merchants?.length || 0;
+          const merchants = merchantsData.merchants || [];
+          subMerchantCount = merchants.length;
+          setSubMerchants(merchants.slice(0, 5));
         }
 
         // Fetch transactions from last 30 days
@@ -173,13 +184,26 @@ export default function SuperMerchantDashboard() {
       <div className="space-y-6">
         {/* Welcome section */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Welcome back, <span className="font-semibold">{userName}</span>! Here&apos;s what&apos;s happening with your business.
-          </p>
-          {currentTime && (
-            <p className="text-sm text-gray-500 mt-2">📅 {currentTime}</p>
-          )}
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-1">
+                Welcome back, <span className="font-semibold">{userName}</span>! Here&apos;s what&apos;s happening with your business.
+              </p>
+              {currentTime && (
+                <p className="text-sm text-gray-500 mt-2">📅 {currentTime}</p>
+              )}
+            </div>
+            <Link
+              href="/super-merchant/payment-links/create"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Create Payment Link
+            </Link>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -305,155 +329,136 @@ export default function SuperMerchantDashboard() {
           </div>
         </div>
 
-        {/* Recent Transactions */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-              <p className="text-sm text-gray-500">{recentTransactions.length} transactions</p>
-            </div>
-            <Link 
-              href="/dashboard/transactions"
-              className="text-sm text-secondary hover:text-secondary/80 font-medium"
-            >
-              View All →
-            </Link>
-          </div>
-          
-          <div className="p-6">
-            {recentTransactions.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-5xl mb-4">💳</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">No transactions yet</h4>
-                <p className="text-gray-600 mb-6">
-                  Your sub-merchants haven&apos;t made any transactions yet. 
-                  Share the integration guide with them to get started.
-                </p>
-                <Link
-                  href="/super-merchant/merchants"
-                  className="inline-block px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition"
-                >
-                  Manage Sub-Merchants
-                </Link>
+        {/* Sub-Merchants and Recent Transactions - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Sub-Merchants */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Sub-Merchants</h3>
+                <p className="text-sm text-gray-500">{subMerchants.length} merchants</p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {recentTransactions.map((txn: Transaction) => (
-                  <div key={txn.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        txn.status === 'CAPTURED' || txn.status === 'COMPLETED' ? 'bg-green-500' : 
-                        txn.status === 'FAILED' || txn.status === 'CANCELLED' ? 'bg-red-500' : 
-                        'bg-yellow-500'
-                      }`}></div>
-                      <div>
-                        <div className="font-medium text-gray-900">${parseFloat(String(txn.amount || 0)).toFixed(2)}</div>
-                        <div className="text-sm text-gray-500">{txn.customerEmail || 'No email'}</div>
+              <Link 
+                href="/super-merchant/merchants"
+                className="text-sm text-secondary hover:text-secondary/80 font-medium"
+              >
+                View All →
+              </Link>
+            </div>
+            
+            <div className="p-6">
+              {subMerchants.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-5xl mb-4">🏪</div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">No sub-merchants yet</h4>
+                  <p className="text-gray-600 mb-6">
+                    Start by creating your first sub-merchant to process payments.
+                  </p>
+                  <Link
+                    href="/super-merchant/merchants"
+                    className="inline-block px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition"
+                  >
+                    Create Sub-Merchant
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {subMerchants.map((merchant: SubMerchant) => (
+                    <div key={merchant.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center shrink-0">
+                          <span className="text-secondary font-semibold text-sm">
+                            {merchant.businessName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{merchant.businessName}</div>
+                          <div className="text-sm text-gray-500">{merchant.email}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-sm font-medium ${
+                          merchant.status === 'ACTIVE' ? 'text-green-600' : 
+                          merchant.status === 'PENDING' ? 'text-yellow-600' : 
+                          'text-red-600'
+                        }`}>
+                          {merchant.status}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(merchant.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${
-                        txn.status === 'CAPTURED' || txn.status === 'COMPLETED' ? 'text-green-600' : 
-                        txn.status === 'FAILED' || txn.status === 'CANCELLED' ? 'text-red-600' : 
-                        'text-yellow-600'
-                      }`}>
-                        {txn.status}
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+                <p className="text-sm text-gray-500">{recentTransactions.length} transactions</p>
+              </div>
+              <Link 
+                href="/dashboard/transactions"
+                className="text-sm text-secondary hover:text-secondary/80 font-medium"
+              >
+                View All →
+              </Link>
+            </div>
+            
+            <div className="p-6">
+              {recentTransactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-5xl mb-4">💳</div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">No transactions yet</h4>
+                  <p className="text-gray-600 mb-6">
+                    Your sub-merchants haven&apos;t made any transactions yet. 
+                    Share the integration guide with them to get started.
+                  </p>
+                  <Link
+                    href="/super-merchant/merchants"
+                    className="inline-block px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition"
+                  >
+                    Manage Sub-Merchants
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentTransactions.map((txn: Transaction) => (
+                    <div key={txn.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${
+                          txn.status === 'CAPTURED' || txn.status === 'COMPLETED' ? 'bg-green-500' : 
+                          txn.status === 'FAILED' || txn.status === 'CANCELLED' ? 'bg-red-500' : 
+                          'bg-yellow-500'
+                        }`}></div>
+                        <div>
+                          <div className="font-medium text-gray-900">${parseFloat(String(txn.amount || 0)).toFixed(2)}</div>
+                          <div className="text-sm text-gray-500">{txn.customerEmail || 'No email'}</div>
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(txn.createdAt).toLocaleDateString()}
+                      <div className="text-right">
+                        <div className={`text-sm font-medium ${
+                          txn.status === 'CAPTURED' || txn.status === 'COMPLETED' ? 'text-green-600' : 
+                          txn.status === 'FAILED' || txn.status === 'CANCELLED' ? 'text-red-600' : 
+                          'text-yellow-600'
+                        }`}>
+                          {txn.status}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(txn.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Link
-              href="/test-shop"
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-secondary hover:bg-secondary/5 transition"
-            >
-              <div className="text-3xl mr-4">🛒</div>
-              <div>
-                <div className="font-semibold text-gray-900">Test Shop</div>
-                <div className="text-sm text-gray-600">Try demo payment flow</div>
-              </div>
-            </Link>
-            <Link
-              href="/super-merchant/merchants"
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition"
-            >
-              <div className="text-3xl mr-4">🏪</div>
-              <div>
-                <div className="font-semibold text-gray-900">Sub-Merchants</div>
-                <div className="text-sm text-gray-600">Manage your merchants</div>
-              </div>
-            </Link>
-            <Link
-              href="/super-merchant/api-keys"
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-secondary hover:bg-secondary/5 transition"
-            >
-              <div className="text-3xl mr-4">🔑</div>
-              <div>
-                <div className="font-semibold text-gray-900">API Keys</div>
-                <div className="text-sm text-gray-600">Manage API credentials</div>
-              </div>
-            </Link>
-            <Link
-              href="/docs/api"
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition"
-            >
-              <div className="text-3xl mr-4">📖</div>
-              <div>
-                <div className="font-semibold text-gray-900">API Docs</div>
-                <div className="text-sm text-gray-600">Integration guide</div>
-              </div>
-            </Link>
-            <Link
-              href="/super-merchant/reports"
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-secondary hover:bg-secondary/5 transition"
-            >
-              <div className="text-3xl mr-4">📊</div>
-              <div>
-                <div className="font-semibold text-gray-900">Reports</div>
-                <div className="text-sm text-gray-600">View analytics & reports</div>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Getting Started */}
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-primary mb-3">🚀 Super-Merchant Features</h2>
-          <div className="space-y-3 text-sm text-foreground">
-            <div className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              <span>Onboard and manage unlimited sub-merchants</span>
-            </div>
-            <div className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              <span>Earn commissions on all sub-merchant transactions</span>
-            </div>
-            <div className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              <span>Access consolidated reporting across all merchants</span>
-            </div>
-            <div className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              <span>Manage KYC verification for your sub-merchants</span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <Link
-            href="/super-merchant/documentation"
-            className="inline-block mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
-          >
-            View Documentation
-          </Link>
         </div>
       </div>
     </DashboardLayout>

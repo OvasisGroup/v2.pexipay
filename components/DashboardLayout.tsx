@@ -15,9 +15,10 @@ interface User {
 interface DashboardLayoutProps {
   children: React.ReactNode;
   requiredRole?: 'ADMIN' | 'SUPER_MERCHANT' | 'MERCHANT' | 'ANY';
+  fullWidth?: boolean;
 }
 
-export default function DashboardLayout({ children, requiredRole = 'ANY' }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, requiredRole = 'ANY', fullWidth = false }: DashboardLayoutProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +93,13 @@ export default function DashboardLayout({ children, requiredRole = 'ANY' }: Dash
           width: isDesktop ? (sidebarCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 256px)') : '100%'
         }}
       >
-        {children}
+        {fullWidth ? (
+          children
+        ) : (
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        )}
       </main>
     </div>
   );

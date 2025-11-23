@@ -113,8 +113,8 @@ export default function SuperMerchantMerchantEdit({ merchantId }: { merchantId: 
   }
 
   return (
-    <DashboardLayout requiredRole="SUPER_MERCHANT">
-      <div className="max-w-3xl space-y-6">
+    <DashboardLayout requiredRole="SUPER_MERCHANT" fullWidth>
+      <div className="space-y-6">
         <div>
           <Link 
             href={`/super-merchant/merchants/${merchantId}`}
