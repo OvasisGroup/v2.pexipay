@@ -23,7 +23,7 @@ export default function CancelPage() {
           <div className="space-y-3">
             <Link
               href="/test-shop/checkout"
-              className="block w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+              className="block w-full py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-semibold"
             >
               Try Again
             </Link>

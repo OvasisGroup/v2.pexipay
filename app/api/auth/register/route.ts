@@ -12,8 +12,7 @@ const registerSchema = z.object({
   businessType: z.string(),
   country: z.string(),
   taxId: z.string(),
-  type: z.enum(['super-merchant', 'merchant']),
-  superMerchantId: z.string().optional(),
+  role: z.enum(['SUPER_MERCHANT', 'MERCHANT']),
 });
 
 export async function POST(request: NextRequest) {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(data.password);
 
-    if (data.type === 'super-merchant') {
+    if (data.role === 'SUPER_MERCHANT') {
       // Create super-merchant
       const superMerchant = await prisma.superMerchant.create({
         data: {
@@ -78,38 +77,19 @@ export async function POST(request: NextRequest) {
         userId: user.id,
       });
     } else {
-      // Merchant registration requires super-merchant ID
-      if (!data.superMerchantId) {
-        return NextResponse.json(
-          { error: 'Super-merchant ID is required for merchant registration' },
-          { status: 400 }
-        );
-      }
-
-      // Verify super-merchant exists
-      const superMerchant = await prisma.superMerchant.findUnique({
-        where: { id: data.superMerchantId },
-      });
-
-      if (!superMerchant) {
-        return NextResponse.json(
-          { error: 'Invalid super-merchant ID' },
-          { status: 400 }
-        );
-      }
-
-      // Create merchant
+      // Create merchant without super-merchant requirement
       const merchant = await prisma.merchant.create({
         data: {
           id: `m_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          name: data.name,
+          name: data.businessName,
           email: data.email,
           businessName: data.businessName,
           businessType: data.businessType,
           country: data.country,
           taxId: data.taxId,
-          superMerchantId: data.superMerchantId,
+          superMerchantId: 'default',  // TODO: Update schema to make this optional or create default super merchant
           status: 'PENDING',
+          transactionFee: 2.9,
           updatedAt: new Date(),
         },
       });

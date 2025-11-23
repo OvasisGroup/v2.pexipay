@@ -56,7 +56,7 @@ function SuccessContent() {
               href={`${webhookUrl}/api/webhooks/circoflows`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold items-center justify-center gap-2"
+              className="flex w-full py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-semibold items-center justify-center gap-2"
             >
               View Webhook URL
               <ArrowRightIcon className="w-5 h-5" />
@@ -64,7 +64,7 @@ function SuccessContent() {
             
             <Link
               href="/test-shop"
-              className="block w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+              className="block w-full py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition font-semibold"
             >
               Continue Shopping
             </Link>

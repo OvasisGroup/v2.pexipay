@@ -65,18 +65,31 @@ export async function GET(request: NextRequest) {
     }
     // For ADMIN, no where clause (fetch all transactions)
 
-    // Fetch transactions
+    // Get pagination parameters
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+    // Get total count
+    const total = await prisma.transaction.count({
+      where: whereClause,
+    });
+
+    // Fetch transactions with pagination
     const transactions = await prisma.transaction.findMany({
       where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },
-      take: 100, // Limit to last 100 transactions
+      take: limit,
+      skip: offset,
     });
 
     return NextResponse.json({
       transactions,
-      total: transactions.length,
+      total,
+      limit,
+      offset,
     });
   } catch (error) {
     console.error('Error fetching transactions:', error);

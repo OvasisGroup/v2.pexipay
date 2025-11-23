@@ -47,9 +47,22 @@ export async function authenticateApiKey(
   request: NextRequest
 ): Promise<string | null> {
   const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('ApiKey ')) return null;
+  if (!authHeader) return null;
   
-  const apiKey = authHeader.substring(7);
+  // Support both "ApiKey <key>" and "Bearer <key>" formats for API keys
+  let apiKey: string | null = null;
+  if (authHeader.startsWith('ApiKey ')) {
+    apiKey = authHeader.substring(7);
+  } else if (authHeader.startsWith('Bearer ')) {
+    apiKey = authHeader.substring(7);
+    // Only process as API key if it starts with pxp_
+    if (!apiKey.startsWith('pxp_')) {
+      return null; // This is a JWT token, not an API key
+    }
+  } else {
+    return null;
+  }
+  
   if (!apiKey) return null;
   
   try {

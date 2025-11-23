@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import { BuildingStorefrontIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 interface Merchant {
   id: string;
@@ -74,25 +76,53 @@ export default function AdminMerchantsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">Total Merchants</div>
-            <div className="text-3xl font-bold text-gray-900">{merchants.length}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">Active</div>
-            <div className="text-3xl font-bold text-green-600">
-              {merchants.filter(m => m.status === 'ACTIVE').length}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Merchants</div>
+                <div className="text-3xl font-bold text-gray-900">{merchants.length}</div>
+              </div>
+              <div className="shrink-0 w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center">
+                <BuildingStorefrontIcon className="w-8 h-8 text-blue-600" />
+              </div>
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">Pending KYC</div>
-            <div className="text-3xl font-bold text-yellow-600">
-              {merchants.filter(m => m.status === 'PENDING_KYC').length}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-1">Active</div>
+                <div className="text-3xl font-bold text-green-600">
+                  {merchants.filter(m => m.status === 'ACTIVE').length}
+                </div>
+              </div>
+              <div className="shrink-0 w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
+              </div>
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">Suspended</div>
-            <div className="text-3xl font-bold text-red-600">
-              {merchants.filter(m => m.status === 'SUSPENDED').length}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-1">Pending KYC</div>
+                <div className="text-3xl font-bold text-yellow-600">
+                  {merchants.filter(m => m.status === 'PENDING_KYC').length}
+                </div>
+              </div>
+              <div className="shrink-0 w-14 h-14 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <ClockIcon className="w-8 h-8 text-yellow-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-1">Suspended</div>
+                <div className="text-3xl font-bold text-red-600">
+                  {merchants.filter(m => m.status === 'SUSPENDED').length}
+                </div>
+              </div>
+              <div className="shrink-0 w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center">
+                <XCircleIcon className="w-8 h-8 text-red-600" />
+              </div>
             </div>
           </div>
         </div>
@@ -192,7 +222,7 @@ export default function AdminMerchantsPage() {
                     <tr key={m.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <div className="shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                             <span className="text-blue-600 font-semibold text-lg">
                               {m.businessName.charAt(0).toUpperCase()}
                             </span>
@@ -222,8 +252,18 @@ export default function AdminMerchantsPage() {
                         {new Date(m.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                        <button className="text-gray-600 hover:text-gray-900">Edit</button>
+                        <Link 
+                          href={`/admin/merchants/${m.id}`}
+                          className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer border border-blue-600 hover:border-blue-900 px-3 py-1 rounded inline-block"
+                        >
+                          View
+                        </Link>
+                        <Link 
+                          href={`/admin/merchants/${m.id}/edit`}
+                          className="text-gray-600 hover:text-gray-900 cursor-pointer border border-gray-600 hover:border-gray-900 px-3 py-1 rounded inline-block"
+                        >
+                          Edit
+                        </Link>
                       </td>
                     </tr>
                   ))}

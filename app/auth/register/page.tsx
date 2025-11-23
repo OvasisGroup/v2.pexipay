@@ -4,8 +4,15 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { DocumentArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 type AccountType = 'merchant' | 'super-merchant';
+
+interface UploadedDocument {
+  file: File;
+  documentType: string;
+  preview?: string;
+}
 
 function RegisterForm() {
   const router = useRouter();
@@ -22,6 +29,9 @@ function RegisterForm() {
   const [businessType, setBusinessType] = useState('');
   const [country, setCountry] = useState('');
   const [taxId, setTaxId] = useState('');
+  
+  // Document upload state
+  const [documents, setDocuments] = useState<UploadedDocument[]>([]);
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -29,6 +39,84 @@ function RegisterForm() {
       setAccountType('super-merchant');
     }
   }, [searchParams]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, docType: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG, and PDF files are allowed');
+      return;
+    }
+
+    // Create preview for images
+    let preview: string | undefined;
+    if (file.type.startsWith('image/')) {
+      preview = URL.createObjectURL(file);
+    }
+
+    // Check if document type already exists
+    const existingIndex = documents.findIndex(doc => doc.documentType === docType);
+    if (existingIndex >= 0) {
+      // Replace existing document
+      const newDocs = [...documents];
+      newDocs[existingIndex] = { file, documentType: docType, preview };
+      setDocuments(newDocs);
+    } else {
+      // Add new document
+      setDocuments([...documents, { file, documentType: docType, preview }]);
+    }
+
+    toast.success(`${file.name} selected`);
+  };
+
+  const removeDocument = (docType: string) => {
+    setDocuments(documents.filter(doc => doc.documentType !== docType));
+  };
+
+  const uploadDocuments = async (entityId: string, entityType: 'merchant' | 'super-merchant') => {
+    if (documents.length === 0) return;
+
+    const uploadPromises = documents.map(async (doc) => {
+      const formData = new FormData();
+      formData.append('file', doc.file);
+      formData.append('documentType', doc.documentType);
+      
+      if (entityType === 'merchant') {
+        formData.append('merchantId', entityId);
+      } else {
+        formData.append('superMerchantId', entityId);
+      }
+
+      const response = await fetch('/api/kyc/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload document');
+      }
+
+      return response.json();
+    });
+
+    try {
+      await Promise.all(uploadPromises);
+      toast.success('All documents uploaded successfully');
+    } catch (error) {
+      console.error('Document upload error:', error);
+      toast.error('Some documents failed to upload');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +129,22 @@ function RegisterForm() {
 
     if (password.length < 8) {
       toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    // Validate documents
+    if (documents.length < 3) {
+      toast.error('Please upload at least 3 documents (Business License, Tax Certificate, and ID Proof are required)');
+      return;
+    }
+
+    // Check required documents
+    const requiredDocs = ['BUSINESS_LICENSE', 'TAX_CERTIFICATE', 'ID_PROOF'];
+    const uploadedTypes = documents.map(d => d.documentType);
+    const missingDocs = requiredDocs.filter(doc => !uploadedTypes.includes(doc));
+    
+    if (missingDocs.length > 0) {
+      toast.error(`Missing required documents: ${missingDocs.join(', ')}`);
       return;
     }
 
@@ -69,6 +173,10 @@ function RegisterForm() {
       if (!response.ok) {
         throw new Error(data.error || 'Registration failed');
       }
+
+      // Upload documents
+      const entityId = accountType === 'super-merchant' ? data.superMerchantId : data.merchantId;
+      await uploadDocuments(entityId, accountType);
 
       // Store token and redirect
       localStorage.setItem('token', data.token);
@@ -269,16 +377,174 @@ function RegisterForm() {
             </div>
           </div>
 
+          {/* Document Upload Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">KYC Documents</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please upload the following documents to verify your business. Accepted formats: JPG, PNG, PDF (max 10MB each)
+            </p>
+            
+            <div className="space-y-4">
+              {/* Business License */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Business License *
+                </label>
+                {documents.find(d => d.documentType === 'BUSINESS_LICENSE') ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <DocumentArrowUpIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-900">
+                        {documents.find(d => d.documentType === 'BUSINESS_LICENSE')?.file.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument('BUSINESS_LICENSE')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition">
+                    <div className="text-center">
+                      <DocumentArrowUpIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm text-gray-600">Click to upload business license</span>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={(e) => handleFileSelect(e, 'BUSINESS_LICENSE')}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Tax Certificate */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tax Certificate *
+                </label>
+                {documents.find(d => d.documentType === 'TAX_CERTIFICATE') ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <DocumentArrowUpIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-900">
+                        {documents.find(d => d.documentType === 'TAX_CERTIFICATE')?.file.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument('TAX_CERTIFICATE')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition">
+                    <div className="text-center">
+                      <DocumentArrowUpIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm text-gray-600">Click to upload tax certificate</span>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={(e) => handleFileSelect(e, 'TAX_CERTIFICATE')}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* ID Proof */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ID Proof (Passport/Driver&apos;s License) *
+                </label>
+                {documents.find(d => d.documentType === 'ID_PROOF') ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <DocumentArrowUpIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-900">
+                        {documents.find(d => d.documentType === 'ID_PROOF')?.file.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument('ID_PROOF')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition">
+                    <div className="text-center">
+                      <DocumentArrowUpIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm text-gray-600">Click to upload ID proof</span>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={(e) => handleFileSelect(e, 'ID_PROOF')}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Bank Statement (Optional) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bank Statement (Optional)
+                </label>
+                {documents.find(d => d.documentType === 'BANK_STATEMENT') ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <DocumentArrowUpIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-900">
+                        {documents.find(d => d.documentType === 'BANK_STATEMENT')?.file.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument('BANK_STATEMENT')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition">
+                    <div className="text-center">
+                      <DocumentArrowUpIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm text-gray-600">Click to upload bank statement</span>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={(e) => handleFileSelect(e, 'BANK_STATEMENT')}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-start">
             <input
               id="terms"
               type="checkbox"
               required
-              className="h-4 w-4 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded"
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
               I agree to the{' '}
-              <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+              <Link href="/terms" className="text-secondary hover:text-secondary/80">
                 Terms of Service
               </Link>{' '}
               and{' '}
@@ -293,8 +559,8 @@ function RegisterForm() {
             disabled={loading}
             className={`w-full py-3 px-6 rounded-lg font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition ${
               accountType === 'super-merchant'
-                ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
-                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                ? 'bg-secondary hover:bg-secondary/90 focus:ring-secondary'
+                : 'bg-primary hover:bg-primary/90 focus:ring-primary'
             }`}
           >
             {loading ? 'Creating Account...' : 'Create Account'}
@@ -304,7 +570,7 @@ function RegisterForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-semibold">
+            <Link href="/auth/login" className="text-secondary hover:text-secondary/80 font-semibold">
               Sign in
             </Link>
           </p>

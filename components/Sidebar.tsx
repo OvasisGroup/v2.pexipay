@@ -20,6 +20,7 @@ import {
   XMarkIcon,
   Bars3Icon,
   ChevronLeftIcon,
+  BookOpenIcon,
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -50,6 +51,7 @@ const menuItems: Record<string, MenuItem[]> = {
     { name: 'Transactions', href: '/dashboard/transactions', icon: CreditCardIcon },
     { name: 'Settlements', href: '/super-merchant/settlements', icon: BanknotesIcon },
     { name: 'API Keys', href: '/merchant/api-keys', icon: KeyIcon },
+    { name: 'API Documentation', href: '/docs/api-documentation', icon: BookOpenIcon },
     { name: 'Reports', href: '/super-merchant/reports', icon: ChartPieIcon },
     { name: 'Settings', href: '/super-merchant/settings', icon: CogIcon },
   ],
@@ -58,6 +60,7 @@ const menuItems: Record<string, MenuItem[]> = {
     { name: 'Transactions', href: '/dashboard/transactions', icon: CreditCardIcon },
     { name: 'Settlements', href: '/merchant/settlements', icon: BanknotesIcon },
     { name: 'API Keys', href: '/merchant/api-keys', icon: KeyIcon },
+    { name: 'API Documentation', href: '/docs/api-documentation', icon: BookOpenIcon },
     { name: 'Reports', href: '/merchant/reports', icon: ChartPieIcon },
     { name: 'Test Shop', href: '/test-shop', icon: BuildingStorefrontIcon },
     { name: 'Settings', href: '/merchant/settings', icon: CogIcon },
@@ -204,7 +207,7 @@ export default function Sidebar({ role, onCollapseChange }: SidebarProps) {
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                     isActive
-                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      ? 'bg-primary/10 text-primary font-semibold'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                   title={collapsed ? item.name : ''}

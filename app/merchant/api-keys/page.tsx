@@ -167,14 +167,14 @@ function ApiKeysContent() {
         <div className="mb-6 flex justify-between items-center">
           <Link
             href="/docs/api-keys"
-            className="px-6 py-3 bg-white text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50 transition font-semibold flex items-center gap-2"
+            className="px-6 py-3 bg-white text-secondary border-2 border-secondary rounded-lg hover:bg-secondary/5 transition font-semibold flex items-center gap-2"
           >
             <KeyIcon className="w-5 h-5" />
             API Documentation
           </Link>
           <Link
             href="/merchant/api-keys/create"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2"
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-semibold flex items-center gap-2"
           >
             <PlusIcon className="w-5 h-5" />
             Create New API Key
@@ -185,7 +185,7 @@ function ApiKeysContent() {
         <div className="bg-white rounded-lg shadow">
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading API keys...</p>
             </div>
           ) : apiKeys.length === 0 ? (
@@ -197,7 +197,7 @@ function ApiKeysContent() {
               </p>
               <Link
                 href="/merchant/api-keys/create"
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
               >
                 Create Your First API Key
               </Link>

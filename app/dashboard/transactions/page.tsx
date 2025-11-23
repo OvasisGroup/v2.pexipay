@@ -81,7 +81,7 @@ export default function TransactionsPage() {
         setTransactions(data.transactions || []);
         setPagination({
           total: data.total || 0,
-          limit: data.limit || 20,
+          limit: 10,
           offset: data.offset || 0,
         });
       } else {
@@ -227,6 +227,134 @@ export default function TransactionsPage() {
     }
   };
 
+  const downloadReceipt = (transaction: Transaction) => {
+    try {
+      // Create HTML content for the receipt
+      const receiptHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; }
+            .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; }
+            .logo { margin-bottom: 10px; }
+            .logo img { height: 60px; }
+            .company-info { color: #6b7280; font-size: 14px; }
+            .receipt-title { font-size: 24px; font-weight: bold; margin: 30px 0; }
+            .section { margin: 20px 0; }
+            .section-title { font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+            .label { color: #6b7280; font-size: 14px; }
+            .value { color: #111827; font-weight: 500; font-size: 14px; }
+            .amount-section { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .total-amount { font-size: 20px; font-weight: bold; color: #111827; text-align: right; }
+            .status { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+            .status-success { background: #dcfce7; color: #166534; }
+            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo"><img src="/images/pexipay_logo.svg" alt="PexiPay Logo" /></div>
+            <div class="company-info">Payment Processing Platform</div>
+          </div>
+          
+          <div class="receipt-title">Payment Receipt</div>
+          
+          <div class="section">
+            <div class="section-title">Transaction Details</div>
+            <div class="info-row">
+              <span class="label">Transaction ID</span>
+              <span class="value">${transaction.id}</span>
+            </div>
+            ${transaction.externalId ? `
+            <div class="info-row">
+              <span class="label">External ID</span>
+              <span class="value">${transaction.externalId}</span>
+            </div>
+            ` : ''}
+            <div class="info-row">
+              <span class="label">Date</span>
+              <span class="value">${new Date(transaction.createdAt).toLocaleString()}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Status</span>
+              <span class="value"><span class="status status-success">${transaction.status}</span></span>
+            </div>
+            <div class="info-row">
+              <span class="label">Payment Method</span>
+              <span class="value">${transaction.paymentMethod}</span>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Customer Information</div>
+            <div class="info-row">
+              <span class="label">Name</span>
+              <span class="value">${transaction.customerName || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Email</span>
+              <span class="value">${transaction.customerEmail || 'N/A'}</span>
+            </div>
+          </div>
+          
+          <div class="amount-section">
+            <div class="section-title">Payment Breakdown</div>
+            <div class="info-row">
+              <span class="label">Amount</span>
+              <span class="value">${formatAmount(transaction.amount, transaction.currency)}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Merchant Fee</span>
+              <span class="value">-${formatAmount(transaction.merchantFee, transaction.currency)}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Super Merchant Fee</span>
+              <span class="value">-${formatAmount(transaction.superMerchantFee, transaction.currency)}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">PSP Fee</span>
+              <span class="value">-${formatAmount(transaction.pspFee, transaction.currency)}</span>
+            </div>
+            <div class="info-row" style="border-top: 2px solid #3b82f6; margin-top: 10px; padding-top: 10px;">
+              <span class="label" style="font-weight: bold; color: #111827;">Net Amount</span>
+              <span class="total-amount">${formatAmount(transaction.netAmount, transaction.currency)}</span>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated receipt generated by PexiPay</p>
+            <p>For support, contact: support@pexipay.com</p>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Create a new window and print
+      const printWindow = window.open('', '', 'width=800,height=600');
+      if (printWindow) {
+        printWindow.document.write(receiptHTML);
+        printWindow.document.close();
+        
+        // Wait for content to load then print
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+          }, 250);
+        };
+        
+        toast.success('Receipt is ready to download');
+      }
+    } catch (error) {
+      console.error('Failed to generate receipt:', error);
+      toast.error('Failed to generate receipt');
+    }
+  };
+
   return (
     <DashboardLayout requiredRole="ANY">
       <div className="space-y-6">
@@ -248,44 +376,64 @@ export default function TransactionsPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium text-gray-600">Total Revenue</div>
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-2">Total Revenue</div>
+                <div className="text-2xl font-bold text-gray-900">{formatAmount(stats.total, 'USD')}</div>
+                <div className="text-xs text-gray-500 mt-1">{pagination.total} total transactions</div>
+              </div>
+              <div className="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{formatAmount(stats.total, 'USD')}</div>
-            <div className="text-xs text-gray-500 mt-1">{pagination.total} total transactions</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium text-gray-600">Completed</div>
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-2">Completed</div>
+                <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+                <div className="text-xs text-gray-500 mt-1">Successful payments</div>
+              </div>
+              <div className="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-xs text-gray-500 mt-1">Successful payments</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium text-gray-600">Pending</div>
-              <ClockIcon className="w-5 h-5 text-yellow-600" />
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-2">Pending</div>
+                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                <div className="text-xs text-gray-500 mt-1">In progress</div>
+              </div>
+              <div className="w-14 h-14 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
+                <ClockIcon className="w-8 h-8 text-yellow-600" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-xs text-gray-500 mt-1">In progress</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium text-gray-600">Failed</div>
-              <XCircleIcon className="w-5 h-5 text-red-600" />
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-2">Failed</div>
+                <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+                <div className="text-xs text-gray-500 mt-1">Unsuccessful</div>
+              </div>
+              <div className="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                <XCircleIcon className="w-8 h-8 text-red-600" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
-            <div className="text-xs text-gray-500 mt-1">Unsuccessful</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium text-gray-600">Refunded</div>
-              <ArrowPathIcon className="w-5 h-5 text-purple-600" />
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-2">Refunded</div>
+                <div className="text-2xl font-bold text-purple-600">{stats.refunded}</div>
+                <div className="text-xs text-gray-500 mt-1">Money returned</div>
+              </div>
+              <div className="w-14 h-14 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                <ArrowPathIcon className="w-8 h-8 text-purple-600" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-purple-600">{stats.refunded}</div>
-            <div className="text-xs text-gray-500 mt-1">Money returned</div>
           </div>
         </div>
 
@@ -300,7 +448,7 @@ export default function TransactionsPage() {
                 placeholder="Search by ID, customer, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -364,7 +512,7 @@ export default function TransactionsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {loading ? (
             <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading transactions...</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
@@ -379,7 +527,7 @@ export default function TransactionsPage() {
               {filter === 'all' && !searchQuery && (
                 <Link
                   href="/test-shop"
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
                 >
                   Try Test Shop
                 </Link>
@@ -498,13 +646,22 @@ export default function TransactionsPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <button 
-                            onClick={() => handleViewDetails(t)}
-                            className="flex items-center text-blue-600 hover:text-blue-900 font-medium"
-                          >
-                            <EyeIcon className="w-4 h-4 mr-1" />
-                            View
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button 
+                              onClick={() => handleViewDetails(t)}
+                              className="flex items-center text-blue-600 hover:text-blue-900 font-medium cursor-pointer"
+                            >
+                              <EyeIcon className="w-4 h-4 mr-1" />
+                              View
+                            </button>
+                            <button 
+                              onClick={() => downloadReceipt(t)}
+                              className="flex items-center text-green-600 hover:text-green-900 font-medium cursor-pointer"
+                            >
+                              <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
+                              Receipt
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -566,12 +723,21 @@ export default function TransactionsPage() {
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">Transaction Details</h2>
-                <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <XCircleIcon className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => downloadReceipt(selectedTransaction)}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                  >
+                    <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+                    Download Receipt
+                  </button>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <XCircleIcon className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
               
               <div className="p-6 space-y-6">

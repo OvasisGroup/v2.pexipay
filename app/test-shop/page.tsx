@@ -139,7 +139,7 @@ export default function TestShopPage() {
             
             <button
               onClick={() => setShowCart(!showCart)}
-              className="relative p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="relative p-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition"
             >
               <ShoppingCartIcon className="w-6 h-6" />
               {cartCount > 0 && (
@@ -187,7 +187,7 @@ export default function TestShopPage() {
                       
                       <button
                         onClick={() => addToCart(product)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-medium flex items-center gap-2"
                       >
                         <ShoppingCartIcon className="w-5 h-5" />
                         Add
@@ -271,7 +271,7 @@ export default function TestShopPage() {
                   
                   <button
                     onClick={handleCheckout}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition font-semibold flex items-center justify-center gap-2"
                   >
                     <CreditCardIcon className="w-5 h-5" />
                     Proceed to Checkout
