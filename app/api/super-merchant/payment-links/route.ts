@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         superMerchantId: payload.superMerchantId,
         createdBy: payload.userId,
         createdAt: new Date().toISOString(),
-        customerPhone: customerInfo?.phone,
+        customerPhone: customerInfo?.phone || '+1234567890',
         expiresAt: expiresAt || undefined
       }
     });

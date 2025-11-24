@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   const [billingInfo, setBillingInfo] = useState({
     email: 'customer@example.com',
     name: 'Test Customer',
+    phone: '+1234567890',
   });
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function CheckoutPage() {
           customerName: billingInfo.name,
           ...cardData,
           metadata: {
+            phone: billingInfo.phone,
             source: 'test-shop',
             items: cart.map(item => ({
               productId: item.product.id,
@@ -194,6 +196,21 @@ export default function CheckoutPage() {
                     type="text"
                     value={billingInfo.name}
                     onChange={(e) => setBillingInfo({ ...billingInfo, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={billingInfo.phone}
+                    onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
+                    placeholder="+1234567890"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     disabled={loading}

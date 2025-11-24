@@ -152,13 +152,19 @@ export async function POST(request: NextRequest) {
       // Parse card expiry
       const [expMonth, expYear] = data.cardExpiry.split('/');
 
+      // Use webhook.site for testing or a valid public URL
+      const webhookUrl = process.env.APP_URL?.includes('localhost') 
+        ? 'https://webhook.site/unique-id-placeholder' 
+        : `${process.env.APP_URL}/api/webhooks/circoflows`;
+
       const circoFlowsResponse = await circoFlowsClient.createDirectPayment({
         amount: data.amount,
         currency: data.currency,
         customerEmail: data.customerEmail,
         customerName: data.customerName,
+        customerIp,
         merchantReference: transaction.id,
-        webhookUrl: `${process.env.APP_URL}/api/webhooks/circoflows`,
+        webhookUrl,
         returnUrl: `${process.env.APP_URL}/payment/3ds-return`,
         metadata: {
           // Card details in CircoFlows format
@@ -179,10 +185,14 @@ export async function POST(request: NextRequest) {
 
       // Determine final status based on CircoFlows response
       let finalStatus: 'CAPTURED' | 'FAILED' | 'PROCESSING' | 'PENDING';
+      
+      console.log('[Payment API] CircoFlows response:', JSON.stringify(circoFlowsResponse, null, 2));
+      
       if (circoFlowsResponse.status === 'succeeded') {
         finalStatus = 'CAPTURED';
       } else if (circoFlowsResponse.status === 'failed') {
         finalStatus = 'FAILED';
+        console.log('[Payment API] Payment FAILED - CircoFlows status:', circoFlowsResponse.status);
       } else if (circoFlowsResponse.requires3DS) {
         finalStatus = 'PROCESSING';
       } else {
@@ -258,10 +268,12 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      console.error('Payment processing error:', circoFlowsError);
+      const errorMessage = circoFlowsError instanceof Error ? circoFlowsError.message : 'Payment processing failed';
+      console.error('Payment processing error:', errorMessage);
+      
       return NextResponse.json(
         { 
-          error: 'Payment processing failed',
+          error: errorMessage,
           transactionId: transaction.id,
         },
         { status: 500 }

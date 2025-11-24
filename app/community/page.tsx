@@ -48,50 +48,58 @@ export default function DeveloperCommunityPage() {
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Quick Start Card */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-200 p-10 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Quick Start</h2>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Quick Start</h2>
+                  <p className="text-sm text-gray-500 mt-1">Get up and running in minutes</p>
+                </div>
               </div>
               
-              <ol className="space-y-6 mb-8">
-                <li className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+              <ol className="space-y-5 mb-8">
+                <li className="flex gap-5 bg-white rounded-xl p-5 border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center font-bold text-base shadow-md">
                     1
                   </div>
-                  <div>
-                    <strong className="text-gray-900 block mb-1">Sign up for API access</strong>
-                    <p className="text-sm text-gray-600">Create your developer account and get instant API keys</p>
+                  <div className="flex-1">
+                    <strong className="text-lg text-gray-900 block mb-2">Sign up for API access</strong>
+                    <p className="text-sm text-gray-600 leading-relaxed">Create your developer account and get instant API keys to start building immediately</p>
                   </div>
                 </li>
-                <li className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                <li className="flex gap-5 bg-white rounded-xl p-5 border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center font-bold text-base shadow-md">
                     2
                   </div>
-                  <div>
-                    <strong className="text-gray-900 block mb-1">Install our SDK</strong>
-                    <p className="text-sm text-gray-600">Available for Node.js, Python, PHP, Ruby, and more</p>
+                  <div className="flex-1">
+                    <strong className="text-lg text-gray-900 block mb-2">Install our SDK</strong>
+                    <p className="text-sm text-gray-600 leading-relaxed">Choose from our official libraries for JavaScript, Python, PHP, and more</p>
                   </div>
                 </li>
-                <li className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                <li className="flex gap-5 bg-white rounded-xl p-5 border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center font-bold text-base shadow-md">
                     3
                   </div>
-                  <div>
-                    <strong className="text-gray-900 block mb-1">Make your first API call</strong>
-                    <p className="text-sm text-gray-600">Process your first card-to-crypto payment</p>
+                  <div className="flex-1">
+                    <strong className="text-lg text-gray-900 block mb-2">Make your first API call</strong>
+                    <p className="text-sm text-gray-600 leading-relaxed">Process your first card-to-crypto payment with our simple API</p>
                   </div>
                 </li>
               </ol>
 
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Sample API Call</h3>
-                <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-auto">
-                  <code>curl https://api.pexipay.com/v1/payments</code>
+              <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 mb-8 border border-gray-700 shadow-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  <h3 className="font-semibold text-white">Sample API Call</h3>
+                </div>
+                <pre className="bg-black/30 text-gray-100 p-4 rounded-lg text-sm overflow-auto border border-gray-700">
+                  <code className="text-green-400">curl https://api.pexipay.com/v1/payments</code>
                 </pre>
               </div>
 
@@ -120,89 +128,75 @@ export default function DeveloperCommunityPage() {
 
           {/* Developer Resources Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sticky top-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-200 p-8 sticky top-6 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-secondary to-secondary/80 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Resources</h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Resources</h2>
+                  <p className="text-sm text-gray-500 mt-1">Everything you need</p>
+                </div>
               </div>
               
-              <div className="space-y-4">
-                <Link href="/docs/api-documentation" className="block p-3 rounded-lg hover:bg-gray-50 transition group">
-                  <div className="font-medium text-gray-900 group-hover:text-primary mb-1">API Documentation</div>
-                  <div className="text-sm text-gray-600">Complete reference with examples</div>
+              <div className="space-y-3">
+                <Link href="/docs/api-documentation" className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">API Documentation</div>
+                    <div className="text-xs text-gray-600">Complete reference with examples</div>
+                  </div>
                 </Link>
-                <Link href="/docs/sdk" className="block p-3 rounded-lg hover:bg-gray-50 transition group">
-                  <div className="font-medium text-gray-900 group-hover:text-primary mb-1">SDK Libraries</div>
-                  <div className="text-sm text-gray-600">Official libraries for all languages</div>
+                <Link href="/docs/sdk" className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">SDK Libraries</div>
+                    <div className="text-xs text-gray-600">Official libraries for all languages</div>
+                  </div>
                 </Link>
-                <Link href="/docs/code-examples" className="block p-3 rounded-lg hover:bg-gray-50 transition group">
-                  <div className="font-medium text-gray-900 group-hover:text-primary mb-1">Code Examples</div>
-                  <div className="text-sm text-gray-600">Ready-to-use code snippets</div>
+                <Link href="/docs/code-examples" className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">Code Examples</div>
+                    <div className="text-xs text-gray-600">Ready-to-use code snippets</div>
+                  </div>
                 </Link>
-                <Link href="/docs/webhooks" className="block p-3 rounded-lg hover:bg-gray-50 transition group">
-                  <div className="font-medium text-gray-900 group-hover:text-primary mb-1">Webhooks Guide</div>
-                  <div className="text-sm text-gray-600">Real-time payment notifications</div>
+                <Link href="/docs/webhooks" className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">Webhooks Guide</div>
+                    <div className="text-xs text-gray-600">Real-time payment notifications</div>
+                  </div>
                 </Link>
-                <Link href="/docs/testing" className="block p-3 rounded-lg hover:bg-gray-50 transition group">
-                  <div className="font-medium text-gray-900 group-hover:text-primary mb-1">Testing Guide</div>
-                  <div className="text-sm text-gray-600">Sandbox and test scenarios</div>
+                <Link href="/docs/testing" className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center group-hover:bg-pink-100 transition-colors">
+                    <svg className="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">Testing Guide</div>
+                    <div className="text-xs text-gray-600">Sandbox and test scenarios</div>
+                  </div>
                 </Link>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Join Our Community</h3>
-                <div className="space-y-3">
-                  <a 
-                    href="https://discord.gg/" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition group"
-                  >
-                    <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-sm group-hover:text-primary">Discord</div>
-                      <div className="text-xs text-gray-600">Chat with developers</div>
-                    </div>
-                  </a>
-                  <a 
-                    href="https://github.com/" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition group"
-                  >
-                    <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-sm group-hover:text-primary">GitHub</div>
-                      <div className="text-xs text-gray-600">Open-source SDKs</div>
-                    </div>
-                  </a>
-                  <Link 
-                    href="/community/forum" 
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition group"
-                  >
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-sm group-hover:text-primary">Forum</div>
-                      <div className="text-xs text-gray-600">Ask questions</div>
-                    </div>
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -346,7 +340,7 @@ export default function DeveloperCommunityPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-gradient-to-br from-primary to-secondary text-white rounded-2xl shadow-xl overflow-hidden">
+        <section className="bg-secondary text-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-12 lg:p-16 text-center">
             <h3 className="text-3xl lg:text-4xl font-bold mb-4">Ready to Start Building?</h3>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">

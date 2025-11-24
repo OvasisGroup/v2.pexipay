@@ -1,4 +1,4 @@
-const CIRCOFLOWS_API_URL = process.env.CIRCOFLOWS_API_URL || 'https://api.circoflows.com/v1';
+const CIRCOFLOWS_API_URL = process.env.CIRCOFLOWS_API_URL || 'https://gateway.circoflows.com/api/v1';
 const CIRCOFLOWS_API_KEY = process.env.CIRCOFLOWS_API_KEY || '';
 const CIRCOFLOWS_TEST_MODE = process.env.CIRCOFLOWS_TEST_MODE === 'true';
 
@@ -7,6 +7,7 @@ export interface CircoFlowsPaymentRequest {
   currency: string;
   customerEmail?: string;
   customerName?: string;
+  customerIp?: string;
   description?: string;
   merchantReference?: string;
   returnUrl?: string;
@@ -129,44 +130,86 @@ export class CircoFlowsClient {
 
     // Format request to match CircoFlows API structure
     const metadata = request.metadata as Record<string, unknown> | undefined;
+    
+    // Split name into first_name and last_name as required by CircoFlows
+    const fullName = (request.customerName || 'Guest Customer').trim();
+    const nameParts = fullName.split(/\s+/);
+    const firstName = nameParts[0] || 'Guest';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Customer';
+
+    // Extract billing address
+    const billingAddress = (metadata?.billingAddress as Record<string, unknown>) || {};
+
+    // CircoFlows uses a FLAT structure, not nested objects
     const circoFlowsRequest = {
-      amount: request.amount,
+      first_name: firstName,
+      last_name: lastName,
+      email: request.customerEmail || '',
+      phone: (metadata?.phone as string) || '',
+      line1: (billingAddress.line1 as string) || '',
+      city: (billingAddress.city as string) || '',
+      state: (billingAddress.state as string) || 'N/A',
+      country: (billingAddress.country as string) || 'US',
+      postal_code: (billingAddress.postalCode as string) || (billingAddress.postal_code as string) || '',
+      ip_address: request.customerIp || '',
+      amount: request.amount.toString(),
       currency: request.currency,
-      payment_method: 'card',
       card_number: metadata?.card_number as string,
-      expiry_month: metadata?.expiry_month as string,
-      expiry_year: metadata?.expiry_year as string,
-      cvv: metadata?.cvv as string,
-      customer_info: {
-        name: request.customerName || '',
-        email: request.customerEmail || '',
-        phone: (metadata?.phone as string) || '',
-        address: metadata?.billingAddress || {},
-      },
-      metadata: {
-        merchant_reference: request.merchantReference,
-        ...(metadata?.metadata as Record<string, unknown>),
-      },
-      webhook_url: request.webhookUrl,
+      card_expiry_month: metadata?.expiry_month as string,
+      card_expiry_year: metadata?.expiry_year as string,
+      card_cvv: metadata?.cvv as string,
       return_url: request.returnUrl,
+      webhook_url: request.webhookUrl,
+      merchant_transaction_id: request.merchantReference,
     };
 
-    const response = await this.makeRequest<CircoFlowsApiResponse>('/payments', {
+    console.log('[CircoFlows] Direct payment request:', JSON.stringify(circoFlowsRequest, null, 2));
+
+    const response = await this.makeRequest<CircoFlowsApiResponse>('/payment/create', {
       method: 'POST',
       body: JSON.stringify(circoFlowsRequest),
     });
 
+    // Debug logging
+    console.log('[CircoFlows] Raw API response (direct payment):', JSON.stringify(response, null, 2));
+
+    // CircoFlows actual response structure: { status, reason, merchant_transaction_id, transaction_id }
+    const apiResponse = response as unknown as {
+      status: string;
+      reason?: string;
+      merchant_transaction_id?: string;
+      transaction_id?: string;
+      amount?: number;
+      currency?: string;
+      requires_3ds?: boolean;
+      three_ds_url?: string;
+      created_at?: string;
+    };
+    
+    // Handle error/declined response
+    if (apiResponse.status === 'declined' || apiResponse.status === 'failed' || apiResponse.status === 'error') {
+      const errorMsg = apiResponse.reason || 'Payment declined';
+      console.error('[CircoFlows] Payment declined:', errorMsg);
+      throw new Error(`Payment declined: ${errorMsg}`);
+    }
+    
+    // Handle success response
+    if (apiResponse.status !== 'success' && !apiResponse.transaction_id) {
+      console.error('[CircoFlows] Invalid response structure:', response);
+      throw new Error(`CircoFlows error: ${apiResponse.reason || 'Unknown error'}`);
+    }
+
     // Transform CircoFlows response to our internal format
     return {
-      id: response.data.transaction_id,
-      status: this.mapStatus(response.data.status),
-      amount: response.data.amount,
-      currency: response.data.currency,
-      requires3DS: response.data.requires_3ds || response.data.requires_action || false,
-      threeDSUrl: response.data.three_ds_url || response.data.action_data?.['3ds_url'],
-      createdAt: response.data.created_at,
-      gatewayTransactionId: response.data.gateway_transaction_id,
-      webhookQueued: response.data.webhook_queued,
+      id: apiResponse.transaction_id || apiResponse.merchant_transaction_id || '',
+      status: this.mapStatus(apiResponse.status),
+      amount: request.amount, // Use request amount as response might not include it
+      currency: request.currency,
+      requires3DS: apiResponse.requires_3ds || false,
+      threeDSUrl: apiResponse.three_ds_url,
+      createdAt: apiResponse.created_at || new Date().toISOString(),
+      gatewayTransactionId: apiResponse.transaction_id,
+      webhookQueued: false,
     };
   }
 
@@ -193,38 +236,68 @@ export class CircoFlowsClient {
   async createHostedPayment(
     request: CircoFlowsPaymentRequest
   ): Promise<CircoFlowsPaymentResponse> {
-    // Mock response in test mode with placeholder URL
-    if (this.testMode && this.apiUrl.includes('example.com')) {
-      const mockId = `cf_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      return {
-        id: mockId,
-        status: 'pending',
-        amount: request.amount,
-        currency: request.currency,
-        paymentUrl: `${process.env.APP_URL}/test-shop/mock-payment?id=${mockId}`,
-        requires3DS: false,
-        createdAt: new Date().toISOString(),
-      };
-    }
+    // Split name into first_name and last_name as required by CircoFlows
+    const fullName = (request.customerName || 'Guest Customer').trim();
+    const nameParts = fullName.split(/\s+/);
+    const firstName = nameParts[0] || 'Guest';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Customer';
 
-    const response = await this.makeRequest<CircoFlowsApiResponse>('/payments/hosted', {
+    // CircoFlows uses a FLAT structure, not nested objects
+    const circoFlowsRequest = {
+      first_name: firstName,
+      last_name: lastName,
+      email: request.customerEmail || '',
+      phone: request.metadata?.customerPhone || request.customerEmail || '+1234567890',
+      amount: request.amount.toString(),
+      currency: request.currency,
+      return_url: request.returnUrl,
+      webhook_url: request.webhookUrl,
+      merchant_transaction_id: request.merchantReference,
+    };
+    
+    const response = await this.makeRequest<CircoFlowsApiResponse>('/payment/create', {
       method: 'POST',
-      body: JSON.stringify({
-        ...request,
-        testMode: this.testMode,
-      }),
+      body: JSON.stringify(circoFlowsRequest),
     });
 
+    console.log('[CircoFlows] Raw API response:', JSON.stringify(response, null, 2));
+
+    // CircoFlows actual response structure: { status, reason, merchant_transaction_id, transaction_id }
+    const apiResponse = response as unknown as {
+      status: string;
+      reason?: string;
+      merchant_transaction_id?: string;
+      transaction_id?: string;
+      payment_url?: string;
+      amount?: number;
+      currency?: string;
+      requires_3ds?: boolean;
+      three_ds_url?: string;
+      created_at?: string;
+    };
+    
+    // Handle error/declined response
+    if (apiResponse.status === 'declined' || apiResponse.status === 'failed' || apiResponse.status === 'error') {
+      const errorMsg = apiResponse.reason || 'Payment declined';
+      throw new Error(`Payment declined: ${errorMsg}`);
+    }
+    
+    // Handle success response
+    if (apiResponse.status !== 'success' && !apiResponse.transaction_id) {
+      throw new Error(`CircoFlows error: ${apiResponse.reason || 'Unknown error'}`);
+    }
+    
     return {
-      id: response.data.transaction_id,
-      status: this.mapStatus(response.data.status),
-      amount: response.data.amount,
-      currency: response.data.currency,
-      paymentUrl: response.data.payment_url,
-      requires3DS: response.data.requires_3ds || false,
-      threeDSUrl: response.data.three_ds_url,
-      createdAt: response.data.created_at,
-      gatewayTransactionId: response.data.gateway_transaction_id,
+      id: apiResponse.transaction_id || apiResponse.merchant_transaction_id || '',
+      status: this.mapStatus(apiResponse.status),
+      amount: request.amount,
+      currency: request.currency,
+      paymentUrl: apiResponse.payment_url,
+      requires3DS: apiResponse.requires_3ds || false,
+      threeDSUrl: apiResponse.three_ds_url,
+      createdAt: apiResponse.created_at || new Date().toISOString(),
+      gatewayTransactionId: apiResponse.transaction_id,
+      webhookQueued: false,
     };
   }
 
@@ -356,7 +429,14 @@ export class CircoFlowsClient {
     endpoint: string,
     options: RequestInit
   ): Promise<T> {
-    const url = `${this.apiUrl}${endpoint}`;
+    // Remove trailing slash from apiUrl and leading slash from endpoint, then join properly
+    let baseUrl = this.apiUrl.replace(/\/$/, '');
+    // Insert /test before the endpoint path if in test mode
+    if (this.testMode && !baseUrl.includes('/test')) {
+      baseUrl = baseUrl.replace('/api/v1', '/api/v1/test');
+    }
+    const path = endpoint.replace(/^\//, '');
+    const url = `${baseUrl}/${path}`;
 
     console.log(`[CircoFlows] ${options.method || 'GET'} ${url}`);
     console.log(`[CircoFlows] Test Mode: ${this.testMode}`);

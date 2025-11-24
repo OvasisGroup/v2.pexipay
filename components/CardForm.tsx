@@ -30,7 +30,7 @@ export default function CardForm({ onSubmit, loading = false }: CardFormProps) {
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [state, setState] = useState('NY');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('US');
 
@@ -129,6 +129,7 @@ export default function CardForm({ onSubmit, loading = false }: CardFormProps) {
     // Billing address
     if (!line1.trim()) newErrors.line1 = 'Address is required';
     if (!city.trim()) newErrors.city = 'City is required';
+    if (!state.trim()) newErrors.state = 'State is required';
     if (!postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     if (!country) newErrors.country = 'Country is required';
 
@@ -150,7 +151,7 @@ export default function CardForm({ onSubmit, loading = false }: CardFormProps) {
         line1,
         line2: line2 || undefined,
         city,
-        state: state || undefined,
+        state,
         postalCode,
         country,
       },
@@ -327,7 +328,7 @@ export default function CardForm({ onSubmit, loading = false }: CardFormProps) {
           {/* State */}
           <div>
             <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
-              State (Optional)
+              State / Province
             </label>
             <input
               type="text"
@@ -335,9 +336,15 @@ export default function CardForm({ onSubmit, loading = false }: CardFormProps) {
               value={state}
               onChange={(e) => setState(e.target.value)}
               placeholder="NY"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.state ? 'border-red-500' : 'border-gray-300'
+              }`}
               disabled={loading}
+              required
             />
+            {errors.state && (
+              <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+            )}
           </div>
         </div>
 

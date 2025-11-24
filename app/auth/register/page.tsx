@@ -20,6 +20,36 @@ function RegisterForm() {
   const [accountType, setAccountType] = useState<AccountType>('merchant');
   const [loading, setLoading] = useState(false);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // Redirect to role-based dashboard
+        switch (user.role) {
+          case 'ADMIN':
+            router.push('/admin/dashboard');
+            break;
+          case 'SUPER_MERCHANT':
+            router.push('/super-merchant/dashboard');
+            break;
+          case 'MERCHANT':
+            router.push('/merchant/dashboard');
+            break;
+          default:
+            router.push('/dashboard');
+        }
+      } catch (error) {
+        // Invalid user data, clear storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }, [router]);
+
   // Form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -178,8 +208,9 @@ function RegisterForm() {
       const entityId = accountType === 'super-merchant' ? data.superMerchantId : data.merchantId;
       await uploadDocuments(entityId, accountType);
 
-      // Store token and redirect
+      // Store token and redirect (authToken for navbar detection)
       localStorage.setItem('token', data.token);
+      localStorage.setItem('authToken', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       toast.success('Account created successfully! Welcome to PexiPay!');

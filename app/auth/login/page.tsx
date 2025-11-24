@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,6 +11,36 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // Redirect to role-based dashboard
+        switch (user.role) {
+          case 'ADMIN':
+            router.push('/admin/dashboard');
+            break;
+          case 'SUPER_MERCHANT':
+            router.push('/super-merchant/dashboard');
+            break;
+          case 'MERCHANT':
+            router.push('/merchant/dashboard');
+            break;
+          default:
+            router.push('/dashboard');
+        }
+      } catch (error) {
+        // Invalid user data, clear storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +61,9 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store token in localStorage
+      // Store token in localStorage (authToken for navbar detection)
       localStorage.setItem('token', data.token);
+      localStorage.setItem('authToken', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       toast.success(`Welcome back, ${data.user.name || data.user.email}!`);

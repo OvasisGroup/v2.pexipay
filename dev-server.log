@@ -1,0 +1,101 @@
+
+> pexipay@0.1.0 dev /Users/asd/production/pexipay
+> next dev
+
+   ▲ Next.js 16.0.3 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://172.16.1.238:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1286ms
+ GET /test-shop/checkout 200 in 3.5s (compile: 3.0s, render: 540ms)
+
+> pexipay@0.1.0 dev /Users/asd/production/pexipay
+> next dev
+
+   ▲ Next.js 16.0.3 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://172.16.1.238:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1218ms
+ ○ Compiling /test-shop/checkout ...
+ POST /api/payments/direct 200 in 5.5s (compile: 3.1s, render: 2.4s)
+ GET /test-shop/checkout 200 in 9.3s (compile: 8.4s, render: 910ms)
+prisma:query SELECT "public"."Merchant"."id", "public"."Merchant"."name", "public"."Merchant"."email", "public"."Merchant"."businessName", "public"."Merchant"."businessType", "public"."Merchant"."country", "public"."Merchant"."taxId", "public"."Merchant"."status"::text, "public"."Merchant"."superMerchantId", "public"."Merchant"."transactionFee", "public"."Merchant"."createdAt", "public"."Merchant"."updatedAt" FROM "public"."Merchant" WHERE ("public"."Merchant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SuperMerchant"."id", "public"."SuperMerchant"."name", "public"."SuperMerchant"."email", "public"."SuperMerchant"."businessName", "public"."SuperMerchant"."businessType", "public"."SuperMerchant"."country", "public"."SuperMerchant"."taxId", "public"."SuperMerchant"."status"::text, "public"."SuperMerchant"."commissionRate", "public"."SuperMerchant"."createdAt", "public"."SuperMerchant"."updatedAt" FROM "public"."SuperMerchant" WHERE "public"."SuperMerchant"."id" = $1 OFFSET $2
+prisma:query SELECT "public"."FraudRule"."id", "public"."FraudRule"."name", "public"."FraudRule"."description", "public"."FraudRule"."type"::text, "public"."FraudRule"."config", "public"."FraudRule"."score", "public"."FraudRule"."isActive", "public"."FraudRule"."createdAt", "public"."FraudRule"."updatedAt" FROM "public"."FraudRule" WHERE "public"."FraudRule"."isActive" = $1 OFFSET $2
+prisma:query INSERT INTO "public"."Transaction" ("id","merchantId","amount","currency","paymentMethod","status","customerEmail","customerName","customerIp","requires3DS","fraudScore","fraudStatus","merchantFee","superMerchantFee","pspFee","netAmount","metadata","createdAt","updatedAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."PaymentMethod"),CAST($6::text AS "public"."TransactionStatus"),$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING "public"."Transaction"."id", "public"."Transaction"."externalId", "public"."Transaction"."merchantId", "public"."Transaction"."amount", "public"."Transaction"."currency", "public"."Transaction"."paymentMethod"::text, "public"."Transaction"."status"::text, "public"."Transaction"."customerEmail", "public"."Transaction"."customerName", "public"."Transaction"."customerIp", "public"."Transaction"."circoFlowsId", "public"."Transaction"."circoFlowsStatus", "public"."Transaction"."circoFlowsResponse", "public"."Transaction"."requires3DS", "public"."Transaction"."threeDSStatus", "public"."Transaction"."fraudScore", "public"."Transaction"."fraudStatus", "public"."Transaction"."merchantFee", "public"."Transaction"."superMerchantFee", "public"."Transaction"."pspFee", "public"."Transaction"."netAmount", "public"."Transaction"."metadata", "public"."Transaction"."processedAt", "public"."Transaction"."createdAt", "public"."Transaction"."updatedAt"
+[CircoFlows] Direct payment request: {
+  "amount": 79.99,
+  "currency": "USD",
+  "payment_method": "card",
+  "card_number": "4242424242424242",
+  "expiry_month": "03",
+  "expiry_year": "2028",
+  "cvv": "123",
+  "customer_info": {
+    "name": "Test Customer",
+    "email": "customer@example.com",
+    "phone": "customer@example.com",
+    "address": {
+      "line1": "Amkay Plaza, Nyali",
+      "city": "Mombasa, Kenya",
+      "postalCode": "80112",
+      "country": "US"
+    }
+  },
+  "metadata": {
+    "merchant_reference": "cmicyrod70009gv1jvzb77ey3",
+    "transactionId": "cmicyrod70009gv1jvzb77ey3",
+    "merchantId": "cmi8pevkt00030zmtdvltvtwp",
+    "source": "test-shop",
+    "items": [
+      {
+        "productId": "prod_3",
+        "productName": "Laptop Backpack",
+        "quantity": 1,
+        "price": 79.99
+      }
+    ]
+  },
+  "webhook_url": "http://localhost:3000/api/webhooks/circoflows",
+  "return_url": "http://localhost:3000/payment/3ds-return"
+}
+[CircoFlows] POST https://gateway.circoflows.com/api/v1/test/payment/create
+[CircoFlows] Test Mode: true
+[CircoFlows] Response: { status: 'declined', reason: 'The first name field is required.' }
+[CircoFlows] Raw API response (direct payment): {
+  "status": "declined",
+  "reason": "The first name field is required."
+}
+[CircoFlows] response.success: undefined
+[CircoFlows] response.data exists: false
+[CircoFlows] Invalid response structure: { status: 'declined', reason: 'The first name field is required.' }
+prisma:query UPDATE "public"."Transaction" SET "status" = CAST($1::text AS "public"."TransactionStatus"), "circoFlowsResponse" = $2, "updatedAt" = $3 WHERE ("public"."Transaction"."id" = $4 AND 1=1) RETURNING "public"."Transaction"."id", "public"."Transaction"."externalId", "public"."Transaction"."merchantId", "public"."Transaction"."amount", "public"."Transaction"."currency", "public"."Transaction"."paymentMethod"::text, "public"."Transaction"."status"::text, "public"."Transaction"."customerEmail", "public"."Transaction"."customerName", "public"."Transaction"."customerIp", "public"."Transaction"."circoFlowsId", "public"."Transaction"."circoFlowsStatus", "public"."Transaction"."circoFlowsResponse", "public"."Transaction"."requires3DS", "public"."Transaction"."threeDSStatus", "public"."Transaction"."fraudScore", "public"."Transaction"."fraudStatus", "public"."Transaction"."merchantFee", "public"."Transaction"."superMerchantFee", "public"."Transaction"."pspFee", "public"."Transaction"."netAmount", "public"."Transaction"."metadata", "public"."Transaction"."processedAt", "public"."Transaction"."createdAt", "public"."Transaction"."updatedAt"
+Payment processing error: Error: CircoFlows error: Unknown error
+    at CircoFlowsClient.createDirectPayment (lib/circoflows/client.ts:170:13)
+    at async POST (app/api/payments/direct/route.ts:155:34)
+  168 |     if (!response.success || !response.data) {
+  169 |       console.error('[CircoFlows] Invalid response structure:', response);
+> 170 |       throw new Error(`CircoFlows error: ${response.message || 'Unknown error'}`);
+      |             ^
+  171 |     }
+  172 |
+  173 |     const data = response.data;
+ GET /merchant/dashboard 200 in 1187ms (compile: 1131ms, render: 56ms)
+ GET /dashboard/transactions 200 in 660ms (compile: 621ms, render: 39ms)
+prisma:query SELECT "public"."User"."id", "public"."User"."merchantId" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Transaction"."id" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."Transaction"."id", "public"."Transaction"."externalId", "public"."Transaction"."merchantId", "public"."Transaction"."amount", "public"."Transaction"."currency", "public"."Transaction"."paymentMethod"::text, "public"."Transaction"."status"::text, "public"."Transaction"."customerEmail", "public"."Transaction"."customerName", "public"."Transaction"."customerIp", "public"."Transaction"."circoFlowsId", "public"."Transaction"."circoFlowsStatus", "public"."Transaction"."circoFlowsResponse", "public"."Transaction"."requires3DS", "public"."Transaction"."threeDSStatus", "public"."Transaction"."fraudScore", "public"."Transaction"."fraudStatus", "public"."Transaction"."merchantFee", "public"."Transaction"."superMerchantFee", "public"."Transaction"."pspFee", "public"."Transaction"."netAmount", "public"."Transaction"."metadata", "public"."Transaction"."processedAt", "public"."Transaction"."createdAt", "public"."Transaction"."updatedAt" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 ORDER BY "public"."Transaction"."createdAt" DESC LIMIT $2 OFFSET $3
+ GET /api/transactions?limit=10&offset=0 200 in 1666ms (compile: 248ms, render: 1418ms)
+prisma:query SELECT "public"."User"."id", "public"."User"."merchantId" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Transaction"."id" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."Transaction"."id", "public"."Transaction"."externalId", "public"."Transaction"."merchantId", "public"."Transaction"."amount", "public"."Transaction"."currency", "public"."Transaction"."paymentMethod"::text, "public"."Transaction"."status"::text, "public"."Transaction"."customerEmail", "public"."Transaction"."customerName", "public"."Transaction"."customerIp", "public"."Transaction"."circoFlowsId", "public"."Transaction"."circoFlowsStatus", "public"."Transaction"."circoFlowsResponse", "public"."Transaction"."requires3DS", "public"."Transaction"."threeDSStatus", "public"."Transaction"."fraudScore", "public"."Transaction"."fraudStatus", "public"."Transaction"."merchantFee", "public"."Transaction"."superMerchantFee", "public"."Transaction"."pspFee", "public"."Transaction"."netAmount", "public"."Transaction"."metadata", "public"."Transaction"."processedAt", "public"."Transaction"."createdAt", "public"."Transaction"."updatedAt" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 ORDER BY "public"."Transaction"."createdAt" DESC LIMIT $2 OFFSET $3
+ GET /api/transactions?limit=10&offset=0 200 in 1155ms (compile: 6ms, render: 1149ms)
+prisma:query SELECT "public"."User"."id", "public"."User"."merchantId" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Transaction"."id" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."Transaction"."id", "public"."Transaction"."externalId", "public"."Transaction"."merchantId", "public"."Transaction"."amount", "public"."Transaction"."currency", "public"."Transaction"."paymentMethod"::text, "public"."Transaction"."status"::text, "public"."Transaction"."customerEmail", "public"."Transaction"."customerName", "public"."Transaction"."customerIp", "public"."Transaction"."circoFlowsId", "public"."Transaction"."circoFlowsStatus", "public"."Transaction"."circoFlowsResponse", "public"."Transaction"."requires3DS", "public"."Transaction"."threeDSStatus", "public"."Transaction"."fraudScore", "public"."Transaction"."fraudStatus", "public"."Transaction"."merchantFee", "public"."Transaction"."superMerchantFee", "public"."Transaction"."pspFee", "public"."Transaction"."netAmount", "public"."Transaction"."metadata", "public"."Transaction"."processedAt", "public"."Transaction"."createdAt", "public"."Transaction"."updatedAt" FROM "public"."Transaction" WHERE "public"."Transaction"."merchantId" = $1 ORDER BY "public"."Transaction"."createdAt" DESC LIMIT $2 OFFSET $3
+ GET /api/transactions?limit=10&offset=10 200 in 1713ms (compile: 7ms, render: 1706ms)
